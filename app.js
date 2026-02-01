@@ -14,13 +14,24 @@ class CellApp {
         this.init();
     }
 
-    init() {
+    async init() {
+        await this.checkAuth();
+
         // Attendre que le DOM soit prêt
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setup());
         } else {
             this.setup();
         }
+    }
+
+    async checkAuth() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = '/auth.html';
+            throw new Error('Unauthorized'); // Stop execution
+        }
+        this.user = session.user;
     }
 
     setup() {
@@ -121,6 +132,18 @@ class CellApp {
         const saveBtn = document.querySelector('.save-btn');
         if (saveBtn) {
             saveBtn.addEventListener('click', () => this.saveNote());
+        }
+
+        // Profil Logout
+        const profileLink = document.querySelector('.nav-link[data-menu="profil"]');
+        if (profileLink) {
+            profileLink.onclick = async (e) => {
+                e.preventDefault();
+                if (confirm("Se déconnecter de Cell. ?")) {
+                    await supabase.auth.signOut();
+                    window.location.href = '/auth.html';
+                }
+            };
         }
     }
 

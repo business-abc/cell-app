@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Cell.</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+
+    <div class="background-animation" id="particles"></div>
+    <div class="dna-background">
+        <canvas id="auth-dna-canvas"></canvas>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="logo">Cell.</div>
+                <p class="subtitle">Votre mémoire numérique organisée.</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">Connexion</button>
+                <button class="tab-btn" data-tab="signup">Inscription</button>
+            </div>
+
+            <div class="auth-form-container">
+                <form id="auth-form">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="email" placeholder="votre@email.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Mot de passe</label>
+                        <input type="password" id="password" placeholder="••••••••" required minlength="6">
+                    </div>
+
+                    <div id="error-message" class="error-banner hidden"></div>
+
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        <span id="btn-text">Se connecter</span>
+                        <div class="loader hidden"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/auth.js"></script>
+</body>
+
+</html>
