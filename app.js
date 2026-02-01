@@ -412,6 +412,12 @@ class CellApp {
                 if (removeBtn) removeBtn.style.removeProperty('display');
             }
 
+            // Restore Carousel Visibility
+            // This is critical because openNoteReadOnly hides it. 
+            // Even if we are in Theme View (where dashboard is hidden), we need to ensure local carousel state is reset
+            // so it appears correctly when we eventually go back to dashboard.
+            if (carousel) carousel.classList.remove('hidden-view');
+
             // Restore close handler
             if (closeArrow) closeArrow.onclick = () => this.toggleNoteCreationMode();
         };
