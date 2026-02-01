@@ -1766,3 +1766,86 @@ body {
 .hidden {
     display: none !important;
 }
+
+/* === Rich Text Editor === */
+.note-content-area[contenteditable] {
+    overflow-y: auto;
+    white-space: pre-wrap;
+    outline: none;
+    line-height: 1.6;
+}
+
+.note-content-area[contenteditable]:empty:before {
+    content: attr(placeholder);
+    color: rgba(255, 255, 255, 0.4);
+    display: block;
+    /* For Firefox */
+    pointer-events: none;
+}
+
+/* === Toolbar Grouping === */
+.toolbar-group-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.formatting-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* === Formatting Toolbar Popup === */
+.format-toolbar {
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    background: rgba(20, 20, 30, 0.85);
+    /* Slightly darker for contrast */
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    gap: 4px;
+    z-index: 100;
+    width: max-content;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.format-toolbar.hidden {
+    display: none !important;
+}
+
+.format-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.format-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.format-action-btn.active {
+    background: rgba(var(--theme-color-primary), 0.3);
+    color: white;
+}
+
+.separator-vertical {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 4px;
+}

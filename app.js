@@ -190,6 +190,9 @@ class CellApp {
                 }
             };
         }
+
+        // Feature: Rich Text Formatting
+        this.initFormattingToolbar();
     }
 
     initSidebarNav() {
@@ -1197,7 +1200,7 @@ class CellApp {
         const contentArea = document.querySelector('.note-content-area');
 
         const title = titleInput ? titleInput.value : '';
-        const content = contentArea ? contentArea.value : '';
+        const content = contentArea ? contentArea.innerHTML : ''; // Use innerHTML for rich text
         const theme = this.selectedNoteTheme;
         const date = this.noteDate || new Date();
 
@@ -1249,7 +1252,7 @@ class CellApp {
 
             // Reset UI
             if (titleInput) titleInput.value = '';
-            if (contentArea) contentArea.value = '';
+            if (contentArea) contentArea.innerHTML = ''; // Reset innerHTML
             this.selectedNoteTheme = null;
 
             const capsule = document.getElementById('theme-capsule');
@@ -1487,6 +1490,80 @@ class CellApp {
             };
         }
         return { r: 255, g: 255, b: 255 }; // Fallback blanc
+    }
+    initFormattingToolbar() {
+        const formatBtn = document.getElementById('format-btn');
+        const toolbar = document.getElementById('format-toolbar');
+        const actionBtns = document.querySelectorAll('.format-action-btn');
+
+        if (formatBtn && toolbar) {
+            // Toggle Toolbar
+            formatBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // Close date picker or theme dropdown if open
+                const datePicker = document.getElementById('custom-date-picker');
+                if (datePicker) datePicker.classList.add('hidden');
+                const themeDropdown = document.getElementById('theme-dropdown');
+                if (themeDropdown) themeDropdown.classList.add('hidden');
+
+                toolbar.classList.toggle('hidden');
+
+                // Close when clicking outside
+                if (!toolbar.classList.contains('hidden')) {
+                    const outsideClick = (ev) => {
+                        if (!toolbar.contains(ev.target) && !formatBtn.contains(ev.target)) {
+                            toolbar.classList.add('hidden');
+                            document.removeEventListener('click', outsideClick);
+                        }
+                    };
+                    setTimeout(() => document.addEventListener('click', outsideClick), 0);
+                }
+            });
+
+            // Action Buttons
+            actionBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const cmd = btn.dataset.cmd;
+                    const val = btn.dataset.val;
+
+                    if (cmd === 'fontSize') {
+                        document.execCommand('fontSize', false, val);
+                    } else {
+                        document.execCommand(cmd, false, null);
+                        btn.classList.toggle('active');
+                    }
+
+                    // Focus back to editor
+                    const editor = document.getElementById('note-content-editable');
+                    if (editor) editor.focus();
+                });
+            });
+
+            // Update active states on selection change
+            document.addEventListener('selectionchange', () => {
+                if (document.activeElement.id === 'note-content-editable') {
+                    this.updateToolbarState();
+                }
+            });
+        }
+    }
+
+    updateToolbarState() {
+        const actionBtns = document.querySelectorAll('.format-action-btn');
+        actionBtns.forEach(btn => {
+            const cmd = btn.dataset.cmd;
+            if (cmd !== 'fontSize') {
+                if (document.queryCommandState(cmd)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            }
+        });
     }
 }
 
