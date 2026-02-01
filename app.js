@@ -1981,7 +1981,8 @@ class CellApp {
         const container = document.getElementById('theme-notes-area');
         if (!container) return;
 
-        container.innerHTML = '<div style="color:white;text-align:center;margin-top:50px;">Chargement...</div>';
+        // Visual loading state only if empty? Or simple logic
+        // container.innerHTML = '<div style="color:white;text-align:center;margin-top:50px;">Chargement...</div>';
 
         try {
             const { data, error } = await supabase
