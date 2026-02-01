@@ -316,6 +316,26 @@ class CellApp {
 
             // Reset File Selection
             this.removeSelectedFile();
+
+            // Reset Form Fields
+            const titleInput = document.querySelector('.note-title-input');
+            const contentArea = document.querySelector('.note-content-area');
+            if (titleInput) titleInput.value = '';
+            if (contentArea) contentArea.innerHTML = '';
+
+            // Reset Theme Selection
+            this.selectedNoteTheme = null;
+            const capsule = document.getElementById('theme-capsule');
+            if (capsule) {
+                capsule.classList.remove('selected');
+                capsule.style.removeProperty('--selected-theme-color');
+                capsule.innerHTML = '<span class="capsule-icon">?</span>';
+            }
+
+            // Hide Formatting Toolbar if open
+            const formatToolbar = document.getElementById('format-toolbar');
+            if (formatToolbar) formatToolbar.classList.add('hidden');
+
             carousel.classList.remove('hidden-view'); // Restore carousel visibility
         } else {
             // Opening
