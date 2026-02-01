@@ -391,6 +391,23 @@ class CellApp {
             }
         }
 
+        // Initial Toggle State
+        const toggleContainer = document.getElementById('edit-mode-toggle-container');
+        const toggleCheckbox = document.getElementById('edit-mode-checkbox');
+
+        if (toggleContainer) {
+            toggleContainer.classList.remove('hidden'); // Show toggle
+            toggleCheckbox.checked = false; // Reset to off
+
+            toggleCheckbox.onchange = () => {
+                const isEditing = toggleCheckbox.checked;
+                this.setNoteEditable(isEditing);
+            };
+        }
+
+        // Store current note ID for updating
+        this.currentEditingNoteId = note.id;
+
         // Close logic
         const closeArrow = document.getElementById('note-close-arrow');
         // Override close behavior to cleanup read-only state
@@ -432,10 +449,14 @@ class CellApp {
                 capsule.style.pointerEvents = 'auto';
             }
 
+            // Hide Toggle
+            if (toggleContainer) {
+                toggleContainer.classList.add('hidden');
+                toggleCheckbox.onchange = null;
+            }
+            this.currentEditingNoteId = null;
+
             // Restore Carousel Visibility
-            // This is critical because openNoteReadOnly hides it. 
-            // Even if we are in Theme View (where dashboard is hidden), we need to ensure local carousel state is reset
-            // so it appears correctly when we eventually go back to dashboard.
             if (carousel) carousel.classList.remove('hidden-view');
 
             // Restore close handler
@@ -448,6 +469,57 @@ class CellApp {
 
         // Helper to close on escape or click outside? 
         // Note sheet usually covers everything.
+    }
+
+    setNoteEditable(isEditable) {
+        const titleInput = document.querySelector('.note-title-input');
+        const contentArea = document.querySelector('.note-content-area');
+        const formatBtn = document.getElementById('format-btn');
+        const saveBtn = document.querySelector('.note-action-btn.save-btn');
+        const attachBtn = document.getElementById('attach-file-btn');
+        const capsule = document.getElementById('theme-capsule');
+        const removeBtn = document.getElementById('remove-file-btn');
+
+        if (isEditable) {
+            // Enable Inputs
+            if (titleInput) {
+                titleInput.removeAttribute('readonly');
+                titleInput.style.pointerEvents = 'auto';
+            }
+            if (contentArea) {
+                contentArea.setAttribute('contenteditable', 'true');
+                contentArea.style.pointerEvents = 'auto';
+            }
+
+            // Show Tools
+            if (formatBtn) formatBtn.style.removeProperty('display');
+            if (saveBtn) saveBtn.style.removeProperty('display');
+            if (attachBtn) attachBtn.style.removeProperty('display');
+
+            // Allow Theme Change
+            if (capsule) capsule.style.pointerEvents = 'auto';
+
+            // Allow File Removal
+            if (removeBtn) removeBtn.style.removeProperty('display');
+
+        } else {
+            // Revert to Read-Only
+            if (titleInput) {
+                titleInput.setAttribute('readonly', 'true');
+                titleInput.style.pointerEvents = 'none';
+            }
+            if (contentArea) {
+                contentArea.setAttribute('contenteditable', 'false');
+                contentArea.style.pointerEvents = 'none';
+            }
+
+            if (formatBtn) formatBtn.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (attachBtn) attachBtn.style.display = 'none';
+
+            if (capsule) capsule.style.pointerEvents = 'none';
+            if (removeBtn) removeBtn.style.display = 'none';
+        }
     }
 
     /**
@@ -1393,7 +1465,16 @@ class CellApp {
             let attachmentUrl = null;
             let attachmentName = null;
 
-            // Upload File if selected
+            // Check if we are UPDATING an existing note
+            const isUpdate = !!this.currentEditingNoteId;
+
+            // Upload File if selected (or keep existing if update and no new file?)
+            // Logic: If new file selected, upload it. If updating and no new file, keep old URL?
+            // Currently selectedFile is nullified on close. If user doesn't touch it, selectedFile is null.
+            // If updating, we might need to preserve existing attachment if not replaced. 
+            // BUT `openNoteReadOnly` doesn't set `this.selectedFile`. 
+            // So if `this.selectedFile` is present, it's a NEW file.
+
             if (this.selectedFile) {
                 const fileExt = this.selectedFile.name.split('.').pop();
                 const fileName = `${Math.random()}.` + fileExt;
@@ -1411,41 +1492,71 @@ class CellApp {
 
                 attachmentUrl = publicUrl;
                 attachmentName = this.selectedFile.name;
+            } else if (isUpdate) {
+                // Fetch existing note data to preserve attachment if not removed?
+                // Or we can assume if the pill is visible, the attachment is kept? 
+                // Simple approach: perform a SELECT first or pass data? 
+                // Optimization: We could store attachment info in `this.currentNoteAttachment` etc.
+                // For now, let's just query to be safe or blindly update fields.
+                // If we don't include attachment_url in update, it stays same? Yes for UPDATE.
+                // So if attachmentUrl is null, we shouldn't overwrite unless we explicitly deleted it.
+                // TODO: Handle explicit deletion. Ideally `removeSelectedFile` would flag it.
             }
 
-            const { error } = await supabase.from('notes').insert([
-                {
-                    title,
-                    content,
-                    theme_id: theme ? theme.id : null,
-                    date_display: date.toISOString(),
-                    user_id: this.user.id,
-                    attachment_url: attachmentUrl,
-                    attachment_name: attachmentName
+            const payload = {
+                title,
+                content,
+                theme_id: theme ? theme.id : null,
+                date_display: date.toISOString(),
+                user_id: this.user.id
+            };
+
+            // Only update attachment if changed
+            if (attachmentUrl) {
+                payload.attachment_url = attachmentUrl;
+                payload.attachment_name = attachmentName;
+            }
+
+            let error;
+            if (isUpdate) {
+                // UPDATE
+                const { error: updateError } = await supabase
+                    .from('notes')
+                    .update(payload)
+                    .eq('id', this.currentEditingNoteId);
+                error = updateError;
+            } else {
+                // INSERT
+                if (attachmentUrl) {
+                    payload.attachment_url = attachmentUrl;
+                    payload.attachment_name = attachmentName;
                 }
-            ]);
+                const { error: insertError } = await supabase.from('notes').insert([payload]);
+                error = insertError;
+            }
 
             if (error) throw error;
 
             // Stylish Toast with theme name
             const themeName = theme ? theme.name : 'Sans catégorie';
-            this.showToast(`Note enregistrée dans ${themeName}`, 'success');
+            this.showToast(isUpdate ? "Note mise à jour !" : `Note enregistrée dans ${themeName}`, 'success');
 
-            // Slide down animation logic (handled by toggleNoteCreationMode removing active class)
-            // But we want to ensure it feels like it "slides down"
-            this.toggleNoteCreationMode();
-
-            // Reset UI
-            if (titleInput) titleInput.value = '';
-            if (contentArea) contentArea.innerHTML = ''; // Reset innerHTML
-            this.selectedNoteTheme = null;
-
-            const capsule = document.getElementById('theme-capsule');
-            if (capsule) {
-                capsule.classList.remove('selected');
-                capsule.style.removeProperty('--selected-theme-color');
-                capsule.innerHTML = '<span class="capsule-icon">?</span>';
+            // Refresh view if we are in theme details
+            // If we updated a note, we might want to refresh the list in the background
+            if (this.currentEditingNoteId && payload.theme_id) {
+                // Ideally refresh the list for that theme
+                this.renderThemeNotes(payload.theme_id);
             }
+
+            // Close Sheet
+            // `toggleNoteCreationMode` handles closing. 
+            // For read-only mode, we are manually handling cleanups in `cleanupReadOnly`.
+            // Calling `toggleNoteCreationMode` might get confused if we are in read-only "mode" technically.
+            // But `cleanupReadOnly` is bound to the close arrow.
+
+            // Simulating click on close arrow is easiest to trigger correct cleanup flow
+            const closeArrow = document.getElementById('note-close-arrow');
+            if (closeArrow) closeArrow.click();
 
         } catch (e) {
             console.error(e);
