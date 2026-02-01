@@ -1713,8 +1713,53 @@ body {
     z-index: 1000;
 }
 
-/* === File Preview Pill === */
-.file-preview-pill {
+/* === Custom Stylish Toast === */
+.custom-toast {
+    position: fixed;
+    top: 24px;
+    left: 40px;
+    /* Top left as requested */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: rgba(20, 20, 30, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.custom-toast.visible {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.custom-toast.success {
+    border-left: 3px solid #50C878;
+}
+
+.custom-toast.success .toast-icon {
+    color: #50C878;
+}
+
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* === Fix floating dock overlap === */
+.theme-details-view {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);

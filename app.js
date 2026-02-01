@@ -708,52 +708,41 @@ class CellApp {
             console.error(e);
             this.showToast("Erreur lors de la création du thème.");
         }
+
     }
 
-    showToast(message) {
-        // Créer un toast notification style iOS
-        const existingToast = document.querySelector('.toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
+    showToast(message, type = 'default') {
+        const existingToast = document.querySelector('.custom-toast');
+        if (existingToast) existingToast.remove();
 
         const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        toast.style.cssText = `
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            left: auto;
-            transform: translateY(-20px);
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 12px 24px;
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.3s ease;
+        toast.className = `custom-toast ${type}`;
+
+        // Icon based on type
+        let icon = '';
+        if (type === 'success') {
+            icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>`;
+        } else {
+            icon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+        }
+
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <span class="toast-message">${message}</span>
         `;
 
         document.body.appendChild(toast);
 
-        // Animation d'entrée
+        // Trigger animation
         requestAnimationFrame(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(0)';
+            toast.classList.add('visible');
         });
 
-        // Disparition
+        // Hide after 2 seconds
         setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(-20px)';
+            toast.classList.remove('visible');
             setTimeout(() => toast.remove(), 300);
-        }, 2500);
+        }, 2000);
     }
 
     setupCarousel() {
@@ -958,7 +947,7 @@ class CellApp {
 
     createColorSidebarHTML() {
         return `
-            <div class="color-options-sidebar edit-mode-sidebar" style="position: absolute; right: -80px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px;">
+        < div class="color-options-sidebar edit-mode-sidebar" style = "position: absolute; right: -80px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px;" >
                 <button class="color-circle" style="--circle-color: #B22222;" title="Crimson Red"></button>
                 <button class="color-circle" style="--circle-color: #50C878;" title="Émeraude"></button>
                 <button class="color-circle" style="--circle-color: #8DDCDC;" title="Bleu"></button>
@@ -969,7 +958,7 @@ class CellApp {
                 <button class="color-circle" style="--circle-color: #F7E6CA;" title="Beige"></button>
                 <button class="color-circle" style="--circle-color: #FFFAFA;" title="Blanc"></button>
                 <button class="color-circle" style="--circle-color: #353839;" title="Noir"></button>
-            </div>
+            </div >
         `;
     }
 
@@ -1004,7 +993,7 @@ class CellApp {
         // Inject Close Button
         const closeBtn = document.createElement('div');
         closeBtn.className = 'edit-close-btn';
-        closeBtn.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        closeBtn.innerHTML = `< svg width = "24" height = "24" fill = "none" stroke = "currentColor" viewBox = "0 0 24 24" stroke - width="2" ><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg > `;
         Object.assign(closeBtn.style, {
             position: 'absolute', top: '20px', left: '20px', zIndex: '150', cursor: 'pointer', color: 'rgba(255,255,255,0.7)'
         });
@@ -1025,7 +1014,7 @@ class CellApp {
                 const rawColor = circle.style.getPropertyValue('--circle-color');
                 const colorStr = rawColor ? rawColor.trim() : '#7b61ff';
                 const rgb = this.parseColorToRgb(colorStr);
-                const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+                const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b} `;
 
                 card.style.setProperty('--theme-rgb', rgbString);
 
@@ -1069,10 +1058,10 @@ class CellApp {
         if (addBtn) {
             addBtn.classList.add('valid-theme');
             addBtn.innerHTML = `
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                   <polyline points="20 6 9 17 4 12"></polyline>
-               </svg>
-           `;
+        < svg width = "24" height = "24" viewBox = "0 0 24 24" fill = "none" stroke = "white" stroke - width="3" stroke - linecap="round" stroke - linejoin="round" >
+            <polyline points="20 6 9 17 4 12"></polyline>
+               </svg >
+        `;
         }
     }
 
@@ -1279,7 +1268,12 @@ class CellApp {
 
             if (error) throw error;
 
-            this.showToast("Note enregistrée !");
+            // Stylish Toast with theme name
+            const themeName = theme ? theme.name : 'Sans catégorie';
+            this.showToast(`Note enregistrée dans ${themeName}`, 'success');
+
+            // Slide down animation logic (handled by toggleNoteCreationMode removing active class)
+            // But we want to ensure it feels like it "slides down"
             this.toggleNoteCreationMode();
 
             // Reset UI
