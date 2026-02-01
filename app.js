@@ -381,17 +381,28 @@ class CellApp {
 
         // Sync Theme Capsule
         const capsule = document.getElementById('theme-capsule');
-        if (capsule && note.theme_id && this.themes) {
-            const theme = this.themes.find(t => t.id === note.theme_id);
-            if (theme) {
-                capsule.classList.add('selected');
-                capsule.style.setProperty('--selected-theme-color', theme.color);
-                capsule.innerHTML = ''; // Remove "?" icon
-                capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
+        console.log('Opening note. Theme ID:', note.theme_id, 'Themes loaded:', this.themes ? this.themes.length : 0);
 
-                // CRITICAL: Set this so saveNote knows which theme we are in
+        if (note.theme_id) {
+            const theme = this.themes ? this.themes.find(t => t.id === note.theme_id) : null;
+            if (theme) {
                 this.selectedNoteTheme = theme;
+                console.log('Theme found:', theme.name);
+            } else {
+                // Fallback: Preserve ID even if we don't have metadata
+                this.selectedNoteTheme = { id: note.theme_id, name: 'Chargement...', color: '#7b61ff' };
+                console.warn('Theme not found in loaded list, generating fallback');
             }
+        } else {
+            this.selectedNoteTheme = null;
+            console.log('No theme for this note');
+        }
+
+        if (capsule && this.selectedNoteTheme) {
+            capsule.classList.add('selected');
+            capsule.style.setProperty('--selected-theme-color', this.selectedNoteTheme.color);
+            capsule.innerHTML = ''; // Remove "?" icon
+            capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
         }
 
         // Initial Toggle State
@@ -1580,8 +1591,11 @@ class CellApp {
                 }
 
                 // 3. Refresh List in Background
+                console.log('Refreshing list for theme:', payload.theme_id);
                 if (payload.theme_id) {
-                    this.renderThemeNotes(payload.theme_id);
+                    await this.renderThemeNotes(payload.theme_id);
+                } else {
+                    console.warn('No theme_id in payload, skipping refresh');
                 }
 
             } else {
@@ -1978,8 +1992,12 @@ class CellApp {
     }
 
     async renderThemeNotes(themeId) {
+        console.log('Rendering theme notes for:', themeId);
         const container = document.getElementById('theme-notes-area');
-        if (!container) return;
+        if (!container) {
+            console.error('Notes container not found!');
+            return;
+        }
 
         // Visual loading state only if empty? Or simple logic
         // container.innerHTML = '<div style="color:white;text-align:center;margin-top:50px;">Chargement...</div>';
@@ -1992,6 +2010,8 @@ class CellApp {
                 .order('date_display', { ascending: false });
 
             if (error) throw error;
+
+            console.log('Fetched notes:', data ? data.length : 0);
 
             container.innerHTML = '';
 
