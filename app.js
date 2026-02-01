@@ -850,7 +850,7 @@ class CellApp {
                     e.preventDefault();
                     e.stopPropagation();
                     const card = deleteBtn.closest('.dna-card');
-                    if (card && card.id !== 'main-card') {
+                    if (card) {
                         if (confirm('Supprimer ce thème définitivement ?')) {
                             this.deleteTheme(card);
                         }
