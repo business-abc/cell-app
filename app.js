@@ -668,6 +668,24 @@ class CellApp {
             if (diff < -threshold) this.navigateCarousel(1);
             if (diff > threshold) this.navigateCarousel(-1);
         });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            // Checks to ensure we are in the main carousel view
+            const noteSheet = document.getElementById('note-sheet');
+            if (noteSheet && noteSheet.classList.contains('active')) return;
+
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
+
+            if (this.isEditing) return;
+
+            if (e.key === 'ArrowLeft') {
+                this.navigateCarousel(-1);
+            } else if (e.key === 'ArrowRight') {
+                this.navigateCarousel(1);
+            }
+        });
     }
 
     handleSwipe() {
