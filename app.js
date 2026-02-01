@@ -1715,6 +1715,11 @@ class CellApp {
                         <div class="note-preview-date">${date}</div>
                         <div class="note-preview-title">${note.title || 'Sans titre'}</div>
                         <div class="note-preview-snippet">${contentHtml}</div>
+                        <div class="note-interaction-indicator">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6" />
+                            </svg>
+                        </div>
                      `;
 
                     container.appendChild(el);

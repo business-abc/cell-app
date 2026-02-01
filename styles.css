@@ -2032,6 +2032,44 @@ body {
     font-weight: 700;
 }
 
+/* Interaction Indicator */
+.note-preview-card {
+    position: relative;
+    /* Ensure positioning context */
+}
+
+.note-interaction-indicator {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.4);
+    opacity: 0.2;
+    transition: all 0.3s ease;
+    animation: pulse-arrow 3s infinite ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes pulse-arrow {
+
+    0%,
+    100% {
+        opacity: 0.1;
+        transform: translateY(-50%) translateX(0);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: translateY(-50%) translateX(3px);
+    }
+}
+
+.note-preview-card:hover .note-interaction-indicator {
+    opacity: 0.8 !important;
+    transform: translateY(-50%) translateX(5px);
+    animation: none;
+}
+
 /* Scrollbar */
 .theme-notes-area::-webkit-scrollbar {
     width: 8px;
