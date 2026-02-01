@@ -147,18 +147,6 @@ class CellApp {
             saveBtn.addEventListener('click', () => this.saveNote());
         }
 
-        // Note Save Button (Inside Sheet) - Explicit Listener
-        const noteSaveBtn = document.querySelector('.note-action-btn.save-btn');
-        if (noteSaveBtn) {
-            // Remove existing listeners to prevent duplicates if any (tough without reference, but cloning works)
-            // Or just ensure we don't double bind if init called once.
-            // Assuming initEventListeners called once.
-            noteSaveBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.saveNote();
-            });
-        }
-
         // Attach Button
         const attachBtn = document.getElementById('attach-file-btn');
         const fileInput = document.getElementById('note-file-input');
@@ -400,15 +388,7 @@ class CellApp {
                 capsule.style.setProperty('--selected-theme-color', theme.color);
                 capsule.innerHTML = ''; // Remove "?" icon
                 capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
-
-                // CRITICAL: Set for saveNote to use
-                this.selectedNoteTheme = theme;
             }
-        }
-
-        // CRITICAL: Set note date from existing note
-        if (note.date_display) {
-            this.noteDate = new Date(note.date_display);
         }
 
         // Initial Toggle State
@@ -1561,22 +1541,14 @@ class CellApp {
             const themeName = theme ? theme.name : 'Sans catégorie';
             this.showToast(isUpdate ? "Note mise à jour !" : `Note enregistrée dans ${themeName}`, 'success');
 
-            // Refresh view if we are in theme details
-            // If we updated a note, we might want to refresh the list in the background
-            if (this.currentEditingNoteId && payload.theme_id) {
-                // Ideally refresh the list for that theme
-                this.renderThemeNotes(payload.theme_id);
-            }
-
-            // Close Sheet
-            // `toggleNoteCreationMode` handles closing. 
-            // For read-only mode, we are manually handling cleanups in `cleanupReadOnly`.
-            // Calling `toggleNoteCreationMode` might get confused if we are in read-only "mode" technically.
-            // But `cleanupReadOnly` is bound to the close arrow.
-
-            // Simulating click on close arrow is easiest to trigger correct cleanup flow
+            // Close Sheet first for visual feedback
             const closeArrow = document.getElementById('note-close-arrow');
             if (closeArrow) closeArrow.click();
+
+            // Refresh view if we updated a note (list will show new data in background)
+            if (isUpdate && payload.theme_id) {
+                await this.renderThemeNotes(payload.theme_id);
+            }
 
         } catch (e) {
             console.error(e);
