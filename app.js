@@ -150,6 +150,8 @@ class CellApp {
         // Attach Button
         const attachBtn = document.getElementById('attach-file-btn');
         const fileInput = document.getElementById('note-file-input');
+        const removeFileBtn = document.getElementById('remove-file-btn'); // New
+
         if (attachBtn && fileInput) {
             console.log('Attach button found');
             attachBtn.addEventListener('click', (e) => {
@@ -164,6 +166,15 @@ class CellApp {
 
             // Allow re-selecting same file
             fileInput.addEventListener('click', (e) => e.target.value = null);
+
+            // Remove File Handler
+            if (removeFileBtn) {
+                removeFileBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.removeSelectedFile();
+                });
+            }
         } else {
             console.error('Attach button or file input not found', { attachBtn, fileInput });
         }
@@ -250,7 +261,8 @@ class CellApp {
     }
     handleFileSelection(e) {
         const file = e.target.files[0];
-        const display = document.getElementById('file-name-display');
+        const displayPill = document.getElementById('file-preview-pill');
+        const displayText = document.getElementById('file-name-text');
 
         if (file) {
             if (file.type !== 'application/pdf') {
@@ -258,15 +270,25 @@ class CellApp {
                 e.target.value = null; // Reset
                 return;
             }
-            if (display) {
-                display.textContent = file.name;
-                display.classList.remove('hidden');
+            if (displayPill && displayText) {
+                displayText.textContent = file.name;
+                displayPill.classList.remove('hidden');
             }
             this.selectedFile = file;
         } else {
-            if (display) display.classList.add('hidden');
-            this.selectedFile = null;
+            this.removeSelectedFile();
         }
+    }
+
+    removeSelectedFile() {
+        this.selectedFile = null;
+        const fileInput = document.getElementById('note-file-input');
+        const displayPill = document.getElementById('file-preview-pill');
+        const displayText = document.getElementById('file-name-text');
+
+        if (fileInput) fileInput.value = null;
+        if (displayPill) displayPill.classList.add('hidden');
+        if (displayText) displayText.textContent = '';
     }
 
     toggleNoteCreationMode() {
@@ -290,11 +312,7 @@ class CellApp {
             }
 
             // Reset File Selection
-            this.selectedFile = null;
-            const fileDisplay = document.getElementById('file-name-display');
-            const fileInput = document.getElementById('note-file-input');
-            if (fileDisplay) fileDisplay.classList.add('hidden');
-            if (fileInput) fileInput.value = null;
+            this.removeSelectedFile();
         } else {
             // Opening
             sheet.classList.add('active');

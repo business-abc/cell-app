@@ -1713,22 +1713,54 @@ body {
     z-index: 1000;
 }
 
-.file-name-display {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
+/* === File Preview Pill === */
+.file-preview-pill {
+    display: flex;
+    align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
-    border-radius: 12px;
-    max-width: 150px;
+    padding: 6px 12px 6px 6px;
+    /* Less padding on left for button */
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    margin-right: 12px;
+    max-width: 200px;
+}
+
+.file-preview-pill.hidden {
+    display: none !important;
+}
+
+.remove-file-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    font-size: 14px;
+    line-height: 1;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding-bottom: 1px;
+    /* Visual fix for x centering */
+}
+
+.remove-file-btn:hover {
+    background: rgba(255, 75, 75, 0.8);
+    transform: scale(1.1);
+}
+
+.file-name-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-right: 10px;
-}
-
-.file-name-display.hidden {
-    display: none;
+    max-width: 150px;
 }
 
 .hidden {

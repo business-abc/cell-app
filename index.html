@@ -241,7 +241,10 @@
 
             <div class="note-footer-toolbar">
                 <input type="file" id="note-file-input" accept=".pdf" class="hidden">
-                <span id="file-name-display" class="file-name-display hidden"></span>
+                <div id="file-preview-pill" class="file-preview-pill hidden">
+                    <button id="remove-file-btn" class="remove-file-btn" title="Supprimer le fichier">×</button>
+                    <span id="file-name-text" class="file-name-text"></span>
+                </div>
 
                 <button class="note-action-btn icon-only" id="attach-file-btn" title="Pièce jointe">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
