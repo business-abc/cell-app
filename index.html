@@ -174,139 +174,165 @@
                 </main>
             </div>
         </div>
+    </div>
 
-        <!-- Note Creation Sheet -->
-        <div class="note-creation-sheet" id="note-sheet">
-            <!-- Floating Close Arrow -->
-            <div class="note-close-arrow" id="note-close-arrow">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+    <!-- Theme Details View (Timeline) -->
+    <div id="theme-details-view" class="theme-details-view hidden">
+        <!-- Sidebar with DNA Timeline -->
+        <div class="timeline-sidebar">
+            <div class="back-button-container">
+                <button id="back-to-dashboard-btn" class="back-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    <span>Retour</span>
+                </button>
+                <h2 id="theme-details-title" class="theme-details-title">Nom du Thème</h2>
             </div>
 
-            <div class="note-sheet-handle-bar"></div>
+            <div class="dna-timeline-wrapper">
+                <canvas id="dna-canvas-timeline"></canvas>
+            </div>
+        </div>
 
-            <div class="note-header">
-                <div class="note-header-row">
-                    <input type="text" placeholder="Titre" class="note-title-input">
+        <!-- Notes List Area -->
+        <div class="notes-timeline-container" id="notes-timeline-container">
+            <!-- Notes will be injected here -->
+            <div class="empty-state-message">Aucune note dans ce thème pour le moment.</div>
+        </div>
+    </div>
 
-                    <!-- Theme Selector -->
-                    <div class="note-theme-selector" id="theme-selector">
-                        <div class="theme-capsule" id="theme-capsule" title="Sélectionner un thème">
-                            <span class="capsule-icon">?</span>
-                        </div>
+    <!-- Note Creation Sheet -->
+    <div class="note-creation-sheet" id="note-sheet">
+        <!-- Floating Close Arrow -->
+        <div class="note-close-arrow" id="note-close-arrow">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
 
-                        <!-- Theme Dropdown -->
-                        <div class="theme-dropdown hidden" id="theme-dropdown">
-                            <div class="dropdown-header">Rattacher à un thème</div>
-                            <div class="theme-list" id="theme-list">
-                                <!-- Themes dynamically populated -->
-                            </div>
-                        </div>
+        <div class="note-sheet-handle-bar"></div>
+
+        <div class="note-header">
+            <div class="note-header-row">
+                <input type="text" placeholder="Titre" class="note-title-input">
+
+                <!-- Theme Selector -->
+                <div class="note-theme-selector" id="theme-selector">
+                    <div class="theme-capsule" id="theme-capsule" title="Sélectionner un thème">
+                        <span class="capsule-icon">?</span>
                     </div>
 
-                    <div class="note-date-wrapper" id="date-wrapper">
-                        <span id="note-date-text">Date</span>
-
-                        <!-- Custom Date Picker -->
-                        <div class="custom-date-picker hidden" id="custom-date-picker">
-                            <div class="calendar-header">
-                                <button class="cal-nav-btn" id="cal-prev">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <span class="cal-month-label" id="cal-month-year">---</span>
-                                <button class="cal-nav-btn" id="cal-next">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="calendar-weekdays">
-                                <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
-                            </div>
-                            <div class="calendar-days" id="calendar-days-grid"></div>
+                    <!-- Theme Dropdown -->
+                    <div class="theme-dropdown hidden" id="theme-dropdown">
+                        <div class="dropdown-header">Rattacher à un thème</div>
+                        <div class="theme-list" id="theme-list">
+                            <!-- Themes dynamically populated -->
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="note-body">
-                <div class="note-content-area" contenteditable="true" id="note-content-editable"
-                    placeholder="Commencez à écrire..."></div>
-            </div>
+                <div class="note-date-wrapper" id="date-wrapper">
+                    <span id="note-date-text">Date</span>
 
-            <div class="note-footer-toolbar">
-                <input type="file" id="note-file-input" accept=".pdf" class="hidden">
-                <div id="file-preview-pill" class="file-preview-pill hidden">
-                    <button id="remove-file-btn" class="remove-file-btn" title="Supprimer le fichier">×</button>
-                    <span id="file-name-text" class="file-name-text"></span>
-                </div>
-
-                <div class="toolbar-group-left">
-                    <button class="note-action-btn icon-only" id="attach-file-btn" title="Pièce jointe">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            stroke-width="2">
-                            <path
-                                d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48">
-                            </path>
-                        </svg>
-                    </button>
-                    <!-- Formatting was here, now moved -->
-                </div>
-
-                <div class="toolbar-group-right" style="display: flex; gap: 8px; align-items: center;">
-                    <button class="note-action-btn save-btn" title="Enregistrer">
-                        <span>Valider</span>
-                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </button>
-
-                    <div class="formatting-container">
-                        <button class="note-action-btn icon-only" id="format-btn" title="Formatage">
-                            <span style="font-family: serif; font-weight: bold; font-size: 18px;">Aa</span>
-                        </button>
-
-                        <!-- Formatting Toolbar Popup -->
-                        <div id="format-toolbar" class="format-toolbar glass-panel hidden">
-                            <button class="format-action-btn" data-cmd="bold" title="Gras">
-                                <b>B</b>
+                    <!-- Custom Date Picker -->
+                    <div class="custom-date-picker hidden" id="custom-date-picker">
+                        <div class="calendar-header">
+                            <button class="cal-nav-btn" id="cal-prev">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
                             </button>
-                            <button class="format-action-btn" data-cmd="italic" title="Italique">
-                                <i>I</i>
-                            </button>
-                            <button class="format-action-btn" data-cmd="underline" title="Souligné">
-                                <u>U</u>
-                            </button>
-
-                            <div class="separator-vertical"></div>
-
-                            <button class="format-action-btn" data-cmd="fontSize" data-val="3" title="Petit">
-                                <span style="font-size: 12px;">A</span>
-                            </button>
-                            <button class="format-action-btn" data-cmd="fontSize" data-val="5" title="Moyen">
-                                <span style="font-size: 16px;">A</span>
-                            </button>
-                            <button class="format-action-btn" data-cmd="fontSize" data-val="7" title="Grand">
-                                <span style="font-size: 20px;">A</span>
+                            <span class="cal-month-label" id="cal-month-year">---</span>
+                            <button class="cal-nav-btn" id="cal-next">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
                             </button>
                         </div>
+                        <div class="calendar-weekdays">
+                            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                        </div>
+                        <div class="calendar-days" id="calendar-days-grid"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Floating Dock -->
-        <nav class="floating-dock glass-panel">
-            <button class="dock-button add-button" id="add-note-btn" aria-label="Ajouter une note">
-                <span class="button-icon">+</span>
-            </button>
-        </nav>
+        <div class="note-body">
+            <div class="note-content-area" contenteditable="true" id="note-content-editable"
+                placeholder="Commencez à écrire..."></div>
+        </div>
+
+        <div class="note-footer-toolbar">
+            <input type="file" id="note-file-input" accept=".pdf" class="hidden">
+            <div id="file-preview-pill" class="file-preview-pill hidden">
+                <button id="remove-file-btn" class="remove-file-btn" title="Supprimer le fichier">×</button>
+                <span id="file-name-text" class="file-name-text"></span>
+            </div>
+
+            <div class="toolbar-group-left">
+                <button class="note-action-btn icon-only" id="attach-file-btn" title="Pièce jointe">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path
+                            d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48">
+                        </path>
+                    </svg>
+                </button>
+                <!-- Formatting was here, now moved -->
+            </div>
+
+            <div class="toolbar-group-right" style="display: flex; gap: 8px; align-items: center;">
+                <button class="note-action-btn save-btn" title="Enregistrer">
+                    <span>Valider</span>
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </button>
+
+                <div class="formatting-container">
+                    <button class="note-action-btn icon-only" id="format-btn" title="Formatage">
+                        <span style="font-family: serif; font-weight: bold; font-size: 18px;">Aa</span>
+                    </button>
+
+                    <!-- Formatting Toolbar Popup -->
+                    <div id="format-toolbar" class="format-toolbar glass-panel hidden">
+                        <button class="format-action-btn" data-cmd="bold" title="Gras">
+                            <b>B</b>
+                        </button>
+                        <button class="format-action-btn" data-cmd="italic" title="Italique">
+                            <i>I</i>
+                        </button>
+                        <button class="format-action-btn" data-cmd="underline" title="Souligné">
+                            <u>U</u>
+                        </button>
+
+                        <div class="separator-vertical"></div>
+
+                        <button class="format-action-btn" data-cmd="fontSize" data-val="3" title="Petit">
+                            <span style="font-size: 12px;">A</span>
+                        </button>
+                        <button class="format-action-btn" data-cmd="fontSize" data-val="5" title="Moyen">
+                            <span style="font-size: 16px;">A</span>
+                        </button>
+                        <button class="format-action-btn" data-cmd="fontSize" data-val="7" title="Grand">
+                            <span style="font-size: 20px;">A</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Dock -->
+    <nav class="floating-dock glass-panel">
+        <button class="dock-button add-button" id="add-note-btn" aria-label="Ajouter une note">
+            <span class="button-icon">+</span>
+        </button>
+    </nav>
     </div>
 
     <!-- Scripts -->

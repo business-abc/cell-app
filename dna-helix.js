@@ -9,19 +9,19 @@
  */
 
 export class DNAHelix {
-    constructor(canvas) {
+    constructor(canvas, options = {}) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
         // Configuration
-        this.config = {
+        this.config = Object.assign({
             nucleotideCount: 20,          // Nombre de paires par brin
             helixRadius: 60,              // Rayon de l'hélice
             verticalSpacing: 18,          // Espacement vertical entre nucléotides
             nucleotideRadius: 8,          // Rayon des sphères
             rotationSpeed: 0.008,         // Vitesse de rotation (radians par frame)
             perspective: 400,             // Distance de perspective
-        };
+        }, options);
 
         // État
         this.rotation = 0;

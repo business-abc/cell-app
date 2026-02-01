@@ -193,6 +193,9 @@ class CellApp {
 
         // Feature: Rich Text Formatting
         this.initFormattingToolbar();
+
+        // Feature: Theme Details View
+        this.initThemeDetailsView();
     }
 
     initSidebarNav() {
@@ -626,6 +629,14 @@ class CellApp {
                 <span class="theme-title">${name}</span>
             </div>
         `;
+
+        // Click to Open Details
+        cardHtml.addEventListener('click', (e) => {
+            // Ignore if clicking on action buttons (edit/delete)
+            if (e.target.closest('.action-btn')) return;
+
+            this.openThemeDetails(themeId);
+        });
 
         // Insert into Carousel
         const carousel = document.querySelector('.cards-carousel');
@@ -1585,6 +1596,172 @@ class CellApp {
                 }
             }
         });
+    }
+    /* === Theme Details View Logic === */
+
+    initThemeDetailsView() {
+        const backBtn = document.getElementById('back-to-dashboard-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => this.closeThemeDetails());
+        }
+    }
+
+    async openThemeDetails(themeId) {
+        const theme = this.themes.find(t => t.id === themeId);
+        if (!theme) return;
+
+        // 1. Visual Transition
+        const carousel = document.querySelector('.cards-carousel');
+        const dashboardMain = document.querySelector('.dashboard-main');
+        const detailsView = document.getElementById('theme-details-view');
+        const titleEl = document.getElementById('theme-details-title');
+
+        if (dashboardMain) dashboardMain.classList.add('shrunk');
+
+        setTimeout(() => {
+            if (detailsView) {
+                detailsView.classList.remove('hidden');
+                // Trigger reflow
+                void detailsView.offsetWidth;
+                detailsView.classList.add('visible');
+            }
+        }, 300);
+
+        // 2. Set Content
+        if (titleEl) titleEl.textContent = theme.name;
+
+        // 3. Init Timeline DNA
+        this.initTimelineDNA(theme.color);
+
+        // 4. Load Notes
+        await this.fetchAndRenderNotes(themeId);
+    }
+
+    closeThemeDetails() {
+        const dashboardMain = document.querySelector('.dashboard-main');
+        const detailsView = document.getElementById('theme-details-view');
+
+        if (detailsView) {
+            detailsView.classList.remove('visible');
+            setTimeout(() => {
+                detailsView.classList.add('hidden');
+                if (dashboardMain) dashboardMain.classList.remove('shrunk');
+            }, 500);
+        }
+
+        // Stop Timeline DNA to save resources
+        if (this.timelineHelix) {
+            this.timelineHelix.stopAnimation();
+            this.timelineHelix = null;
+        }
+    }
+
+    initTimelineDNA(color) {
+        const canvas = document.getElementById('dna-canvas-timeline');
+        if (!canvas) return;
+
+        // Configuration for a long, vertical strand
+        // We want a lot of nucleotides to scroll through
+        const config = {
+            nucleotideCount: 60, // Much longer
+            helixRadius: 50,     // Slightly smaller radius
+            verticalSpacing: 25, // More spacing
+            rotationSpeed: 0.005 // Slower rotation
+        };
+
+        this.timelineHelix = new DNAHelix(canvas, config);
+        this.timelineHelix.setTheme(color);
+
+        // Fill randomness for visual effect
+        for (let i = 0; i < 60; i++) {
+            if (Math.random() > 0.4) {
+                this.timelineHelix.fillNucleotide(i, color, 'timeline-fill');
+            }
+        }
+    }
+
+    async fetchAndRenderNotes(themeId) {
+        const container = document.getElementById('notes-timeline-container');
+        if (!container) return;
+
+        container.innerHTML = '<div class="empty-state-message">Chargement...</div>';
+
+        try {
+            const { data, error } = await supabase
+                .from('notes')
+                .select('*')
+                .eq('theme_id', themeId)
+                .order('date_display', { ascending: false }); // Newest first
+
+            if (error) throw error;
+
+            container.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(note => {
+                    const card = this.createNoteCard(note);
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = '<div class="empty-state-message">Aucune note dans ce thème.</div>';
+            }
+
+        } catch (e) {
+            console.error('Error loading notes:', e);
+            container.innerHTML = '<div class="empty-state-message">Erreur lors du chargement des notes.</div>';
+        }
+    }
+
+    createNoteCard(note) {
+        const el = document.createElement('div');
+        el.className = 'note-card-glass';
+        // Basic styling for now, ideally moved to CSS
+        el.style.cssText = `
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            transition: transform 0.2s;
+            cursor: pointer;
+        `;
+
+        el.onmouseover = () => el.style.transform = 'translateY(-2px)';
+        el.onmouseout = () => el.style.transform = 'translateY(0)';
+
+        const date = new Date(note.date_display).toLocaleDateString('fr-FR', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        // Safe HTML content (stripped for preview or full)
+        // Check if content is HTML
+        const isHtml = note.content && note.content.includes('<');
+        let previewContent = '';
+
+        if (isHtml) {
+            const temp = document.createElement('div');
+            temp.innerHTML = note.content;
+            previewContent = temp.textContent || temp.innerText || '';
+        } else {
+            previewContent = note.content || '';
+        }
+
+        if (previewContent.length > 200) previewContent = previewContent.substring(0, 200) + '...';
+
+        el.innerHTML = `
+            <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 8px;">${date}</div>
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${note.title || 'Sans titre'}</h3>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.5;">${previewContent}</div>
+        `;
+
+        // Handle click to view full note (Future task: open editor/viewer)
+        el.addEventListener('click', () => {
+            // For now just log
+            console.log('Open note:', note.id);
+        });
+
+        return el;
     }
 }
 
