@@ -633,8 +633,8 @@ body {
 }
 
 .dock-button {
-    width: 64px;
-    height: 64px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     /* Perfect circle */
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -654,7 +654,7 @@ body {
 }
 
 .button-icon {
-    font-size: 32px;
+    font-size: 16px;
     font-weight: 300;
     line-height: 1;
     transition: transform 0.3s ease;
