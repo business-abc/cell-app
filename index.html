@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell. - Votre mémoire organisée</title>
+    <meta name="description" content="Cell. - Stockez et organisez vos informations importantes par thème">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Fond animé -->
+        <div class="background-gradient"></div>
+        <div class="background-particles" id="particles"></div>
+
+        <!-- Layout principal avec sidebar full height -->
+        <div class="main-layout">
+            <!-- Sidebar Menu - Full Height -->
+            <aside class="sidebar glass-sidebar">
+                <!-- Profile Picture Header -->
+                <div class="sidebar-header">
+                    <div class="profile-picture-container">
+                        <div class="profile-picture">
+                            <span class="profile-initials">T</span>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-menu="profil">
+                                <span class="nav-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="8" r="4" />
+                                        <path d="M20 21a8 8 0 1 0-16 0" />
+                                    </svg>
+                                </span>
+                                <span class="nav-label">Profil</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active" data-menu="theme">
+                                <span class="nav-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                                    </svg>
+                                </span>
+                                <span class="nav-label">Thème</span>
+                            </a>
+                            <!-- Submenu -->
+                            <ul class="submenu">
+                                <li><a href="#" class="submenu-link" id="create-theme-link">Créer un thème</a></li>
+                                <li><a href="#" class="submenu-link" id="manage-themes-link">Gérer ses thèmes</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-menu="notes">
+                                <span class="nav-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <!-- DNA Helix Icon -->
+                                        <path d="M2 15c6.667-6 13.333 0 20-6" />
+                                        <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" />
+                                        <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" />
+                                        <path d="M17 6l-2.5-2.5" />
+                                        <path d="M14 8l-3-3" />
+                                        <path d="M7 18l2.5 2.5" />
+                                        <path d="M10 16l3 3" />
+                                        <path d="M2 9c6.667 6 13.333 0 20 6" />
+                                    </svg>
+                                </span>
+                                <span class="nav-label">Notes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-menu="routine">
+                                <span class="nav-icon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
+                                </span>
+                                <span class="nav-label">Routine</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Header -->
+                <header class="app-header">
+                    <h1 class="welcome-message">Bienvenue, <span class="user-name">Thomas</span></h1>
+                </header>
+
+                <!-- Zone centrale - ADN -->
+                <main class="dashboard-main">
+                    <div class="cards-carousel">
+                        <div class="dna-card active" id="main-card" style="--theme-rgb: 123, 97, 255;">
+                            <!-- Actions for Manage Mode -->
+                            <div class="card-actions">
+                                <div class="action-btn edit-btn" title="Éditer">
+                                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </div>
+                                <div class="action-btn delete-btn" title="Supprimer">
+                                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Background gradient -->
+                            <div class="card-gradient"></div>
+
+                            <!-- Perspective grid -->
+                            <div class="card-grid"></div>
+
+                            <!-- DNA Canvas Container -->
+                            <div class="dna-canvas-wrapper">
+                                <canvas id="dna-canvas"></canvas>
+                            </div>
+
+                            <!-- Theme Title -->
+                            <div class="card-footer">
+                                <span class="theme-title">Cell.</span>
+                            </div>
+                        </div>
+
+                        <!-- New Theme Card -->
+                        <div id="new-card" class="dna-card new-theme-card">
+                            <!-- Background Layers -->
+                            <div class="card-gradient"></div>
+                            <div class="card-grid"></div>
+
+                            <!-- DNA Canvas Area (Empty) -->
+                            <div class="dna-canvas-wrapper">
+                                <canvas id="dna-canvas-creation"></canvas>
+                            </div>
+
+                            <!-- Footer: Input Only -->
+                            <div class="card-footer" style="padding-bottom: 30px;">
+                                <input type="text" class="theme-name-input" maxlength="8" placeholder="Nom du thème..."
+                                    style="
+                                    width: 100%;
+                                    background: transparent;
+                                    border: none;
+                                    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                                    color: white;
+                                    font-size: 18px;
+                                    padding: 8px 0;
+                                    text-align: center;
+                                    outline: none;
+                                    font-family: 'Inter', sans-serif;
+                                    letter-spacing: 1px;
+                                ">
+                            </div>
+
+                            <!-- Aura Layer (For JS Effects) -->
+                            <div class="card-glass-layer"
+                                style="position: absolute; inset: 0; pointer-events: none; z-index: 5; border-radius: 24px;">
+                            </div>
+
+                            <!-- Cancel Button -->
+                            <div class="cancel-create-btn"
+                                style="position: absolute; top: 20px; right: 20px; z-index: 50; cursor: pointer; color: rgba(255, 255, 255, 0.6);">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+
+                            <!-- External Sidebar Tools -->
+                            <div class="color-options-sidebar">
+                                <div class="color-circle" style="--circle-color: #B22222" title="Crimson Red"></div>
+                                <div class="color-circle" style="--circle-color: #50C878" title="Émeraude"></div>
+                                <div class="color-circle" style="--circle-color: #8DDCDC" title="Bleu"></div>
+                                <div class="color-circle" style="--circle-color: #FFDE21" title="Jaune"></div>
+                                <div class="color-circle" style="--circle-color: #FFA800" title="Orange"></div>
+                                <div class="color-circle" style="--circle-color: #7b61ff" title="Violet"></div>
+                                <div class="color-circle" style="--circle-color: #FC8EAC" title="Rose"></div>
+                                <div class="color-circle" style="--circle-color: #F7E6CA" title="Beige"></div>
+                                <div class="color-circle" style="--circle-color: #FFFAFA" title="Blanc"></div>
+                                <div class="color-circle" style="--circle-color: #353839" title="Noir"></div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- Note Creation Sheet -->
+        <div class="note-creation-sheet" id="note-sheet">
+            <!-- Floating Close Arrow -->
+            <div class="note-close-arrow" id="note-close-arrow">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+
+            <div class="note-sheet-handle-bar"></div>
+
+            <div class="note-header">
+                <div class="note-header-row">
+                    <input type="text" placeholder="Titre" class="note-title-input">
+
+                    <!-- Theme Selector -->
+                    <div class="note-theme-selector" id="theme-selector">
+                        <div class="theme-capsule" id="theme-capsule" title="Sélectionner un thème">
+                            <span class="capsule-icon">?</span>
+                        </div>
+
+                        <!-- Theme Dropdown -->
+                        <div class="theme-dropdown hidden" id="theme-dropdown">
+                            <div class="dropdown-header">Rattacher à un thème</div>
+                            <div class="theme-list" id="theme-list">
+                                <!-- Themes dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="note-date-wrapper" id="date-wrapper">
+                        <span id="note-date-text">Date</span>
+
+                        <!-- Custom Date Picker -->
+                        <div class="custom-date-picker hidden" id="custom-date-picker">
+                            <div class="calendar-header">
+                                <button class="cal-nav-btn" id="cal-prev">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <span class="cal-month-label" id="cal-month-year">---</span>
+                                <button class="cal-nav-btn" id="cal-next">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+                            </div>
+                            <div class="calendar-days" id="calendar-days-grid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note-body">
+                <textarea placeholder="Commencez à écrire..." class="note-content-area"></textarea>
+            </div>
+
+            <div class="note-footer-toolbar">
+                <button class="note-action-btn icon-only" title="Pièce jointe">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path
+                            d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48">
+                        </path>
+                    </svg>
+                </button>
+
+                <button class="note-action-btn save-btn" title="Enregistrer">
+                    <span>Enregistrer</span>
+                </button>
+
+                <button class="note-action-btn icon-only" title="Paramètres Police">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path d="M4 7V4h16v3M9 20h6M12 4v16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Dock -->
+        <nav class="floating-dock glass-panel">
+            <button class="dock-button add-button" id="add-note-btn" aria-label="Ajouter une note">
+                <span class="button-icon">+</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Scripts -->
+    <script type="module" src="/app.js"></script>
+</body>
+
+</html>

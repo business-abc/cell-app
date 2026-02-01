@@ -1,0 +1,1699 @@
+/* ================================================
+   CELL. - Design System
+   Glassmorphism Scientific Theme
+   ================================================ */
+
+/* === Variables CSS === */
+:root {
+    /* Couleurs principales - Ambiance scientifique/médicale */
+    --color-background-dark: #0a0e14;
+    --color-background-mid: #0d1117;
+    --color-accent-primary: #00d4ff;
+    --color-accent-secondary: #7b61ff;
+    --color-accent-tertiary: #00ffa3;
+
+    /* Couleurs de texte */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: rgba(255, 255, 255, 0.7);
+    --color-text-muted: rgba(255, 255, 255, 0.4);
+
+    /* Glassmorphism */
+    --glass-background: rgba(255, 255, 255, 0.05);
+    --glass-background-hover: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-light: rgba(255, 255, 255, 0.15);
+    --glass-blur: 20px;
+
+    /* Theme Colors (Violet Default) */
+    --theme-color-primary: 123, 97, 255;
+    /* #7b61ff */
+    --theme-color-dark: 30, 20, 60;
+    --theme-color-light: 200, 190, 230;
+
+    /* Colors */
+    --color-bg-primary: #0a0b1e;
+
+    /* Effets */
+    --glow-primary: 0 0 30px rgba(0, 212, 255, 0.3);
+    --glow-secondary: 0 0 20px rgba(123, 97, 255, 0.3);
+
+    /* DNA - Nucléotides éteints */
+    --dna-empty-color: rgba(255, 255, 255, 0.15);
+    --dna-empty-glow: none;
+
+    /* Espacements */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+
+    /* Typographie */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 20px;
+    --font-size-xl: 28px;
+    --font-size-xxl: 36px;
+
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-medium: 300ms ease;
+    --transition-slow: 500ms ease;
+}
+
+/* === Reset & Base === */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    color: var(--color-text-primary);
+    background: var(--color-background-dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* === App Container === */
+.app-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* === Fond animé === */
+.background-gradient {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(var(--theme-color-primary), 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(var(--theme-color-dark), 0.2) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(var(--theme-color-primary), 0.1) 0%, transparent 60%),
+        var(--color-background-dark);
+    z-index: 0;
+    animation: gradientShift 20s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.background-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* === Glassmorphism Panel === */
+.glass-panel {
+    background: var(--glass-background);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+}
+
+.glass-panel:hover {
+    background: var(--glass-background-hover);
+    border-color: var(--glass-border-light);
+}
+
+/* === Header === */
+.app-header {
+    position: relative;
+    z-index: 10;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    text-align: center;
+}
+
+.welcome-message {
+    font-size: var(--font-size-xl);
+    font-weight: 300;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: rgb(var(--theme-color-primary));
+    background: linear-gradient(135deg, #fff 20%, rgb(var(--theme-color-primary)) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(var(--theme-color-primary), 0.5));
+}
+
+/* === Main Layout === */
+.main-layout {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    z-index: 5;
+    overflow: hidden;
+}
+
+/* === Content Area === */
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* === Sidebar - Apple Style Glassmorphism === */
+.sidebar {
+    position: relative;
+    width: max-content;
+    min-width: 80px;
+    max-width: 80px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md) var(--spacing-sm);
+    z-index: 20;
+    transition: min-width var(--transition-medium), max-width var(--transition-medium), background var(--transition-medium), box-shadow var(--transition-medium), border-right-color var(--transition-medium);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.glass-sidebar {
+    /* Dark Violet Glass Theme */
+    background: rgba(var(--theme-color-dark), 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    box-shadow:
+        4px 0 32px rgba(0, 0, 0, 0.3),
+        inset -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Hover expand effect */
+/* Hover expand effect */
+.sidebar:hover {
+    min-width: 260px;
+    max-width: 500px;
+    background: rgba(var(--theme-color-dark), 0.85);
+    /* Darker and more solid on expand */
+    border-right-color: rgba(var(--theme-color-primary), 0.3);
+    /* Violet glow on border */
+    box-shadow:
+        10px 0 50px rgba(0, 0, 0, 0.5),
+        inset -1px 0 0 rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(var(--theme-color-primary), 0.1);
+    /* Subtle aura */
+}
+
+/* === Sidebar Header - Profile Picture === */
+.sidebar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-sm);
+}
+
+.profile-picture-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-picture {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg,
+            rgba(0, 212, 255, 0.3),
+            rgba(123, 97, 255, 0.3));
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: all var(--transition-medium);
+    cursor: pointer;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Expand profile picture on sidebar hover */
+.sidebar:hover .profile-picture {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+}
+
+.profile-picture:hover {
+    border-color: var(--color-accent-primary);
+    box-shadow:
+        0 0 20px rgba(0, 212, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.profile-initials {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    transition: font-size var(--transition-medium);
+}
+
+.sidebar:hover .profile-initials {
+    font-size: 24px;
+}
+
+/* Profile image (when added) */
+.profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: var(--spacing-sm);
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 14px 16px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Icon container */
+.nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    transition: all var(--transition-fast);
+}
+
+.nav-icon svg {
+    transition: all var(--transition-fast);
+}
+
+/* Label - hidden by default, shown on hover */
+.nav-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all var(--transition-medium);
+}
+
+.sidebar:hover .nav-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Hover state */
+/* Hover state */
+.nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.nav-link:hover .nav-icon svg {
+    stroke: rgb(var(--theme-color-primary));
+    transform: scale(1.1);
+}
+
+/* Active state */
+.nav-link.active {
+    color: #fff;
+    background: rgba(var(--theme-color-primary), 0.2);
+    box-shadow: inset 0 0 15px rgba(var(--theme-color-primary), 0.15);
+}
+
+.nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 20px;
+    background: rgb(var(--theme-color-primary));
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 10px rgb(var(--theme-color-primary));
+}
+
+.nav-link.active .nav-icon svg {
+    stroke: rgb(var(--theme-color-primary));
+    filter: drop-shadow(0 0 8px rgba(var(--theme-color-primary), 0.6));
+}
+
+/* Subtle pulse animation for active item */
+@keyframes subtlePulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 212, 255, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 20px 0 rgba(0, 212, 255, 0.1);
+    }
+}
+
+.nav-link.active {
+    animation: subtlePulse 3s ease-in-out infinite;
+}
+
+/* === Dashboard Main === */
+.dashboard-main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-md);
+}
+
+/* === DNA Card - Figma Inspired Design === */
+/* === DNA Card - Atomic Design === */
+.dna-card {
+    position: relative;
+    width: 360px;
+    height: 70vh;
+    max-height: 700px;
+    min-height: 500px;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    /* Default Theme Var (Violet) - Override via inline style for new cards */
+    --theme-rgb: 123, 97, 255;
+
+    /* Dynamic Background */
+    background: linear-gradient(180deg,
+            rgba(10, 14, 20, 0.6) 0%,
+            rgba(var(--theme-rgb), 0.2) 40%,
+            rgba(255, 255, 255, 0.1) 70%,
+            rgba(255, 255, 255, 0.05) 100%);
+
+    margin-bottom: 80px;
+
+    /* Dynamic Shadow and Border */
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(var(--theme-rgb), 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+    transition: all var(--transition-medium);
+}
+
+.dna-card:hover {
+    transform: translateY(-12px);
+    box-shadow:
+        0 50px 100px -20px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        0 0 60px rgba(var(--theme-rgb), 0.6),
+        0 0 120px rgba(var(--theme-rgb), 0.4);
+}
+
+/* Background gradient overlay */
+.card-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Dynamic Gradient */
+    background: radial-gradient(ellipse at 50% 0%, rgba(var(--theme-rgb), 0.4) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Perspective grid at the bottom */
+.card-grid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background:
+        linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.03) 100%);
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.card-grid::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -50%;
+    right: -50%;
+    height: 200%;
+    background:
+        repeating-linear-gradient(90deg,
+            transparent,
+            transparent 40px,
+            rgba(100, 80, 150, 0.15) 40px,
+            rgba(100, 80, 150, 0.15) 41px);
+    transform: perspective(300px) rotateX(60deg);
+    transform-origin: bottom center;
+}
+
+.card-grid::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -100%;
+    right: -100%;
+    height: 200%;
+    background:
+        repeating-linear-gradient(0deg,
+            transparent,
+            transparent 30px,
+            rgba(100, 80, 150, 0.12) 30px,
+            rgba(100, 80, 150, 0.12) 31px);
+    transform: perspective(300px) rotateX(60deg);
+    transform-origin: bottom center;
+}
+
+/* DNA Canvas wrapper */
+/* DNA Canvas wrapper */
+.dna-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    padding: 20px;
+    min-height: 400px;
+}
+
+#dna-canvas {
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+}
+
+/* Card footer with theme title */
+.card-footer {
+    position: relative;
+    z-index: 10;
+    padding: 20px 24px 40px;
+    /* More padding at bottom */
+    text-align: center;
+    /* Removed background as requested previously */
+}
+
+.theme-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    /* Extra Bold */
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    /* Wide spacing */
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(var(--theme-rgb), 0.5);
+    /* Removed pill styles */
+    background: none;
+    padding: 0;
+    border: none;
+    backdrop-filter: none;
+}
+
+/* Glow effect for the DNA */
+.dna-canvas-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle,
+            rgba(123, 97, 255, 0.2) 0%,
+            transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: dnaGlow 4s ease-in-out infinite;
+}
+
+@keyframes dnaGlow {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+/* === Floating Dock === */
+/* === Floating Dock === */
+.floating-dock {
+    position: fixed;
+    bottom: 30px;
+    /* Aligned nicely below the card */
+    left: calc(50% + 40px);
+    /* Center relative to content area (80px sidebar offset) */
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Removed container background/shadow for cleaner look */
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    border: none;
+    padding: 0;
+}
+
+.dock-button {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    /* Perfect circle */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Dark Glass theme matching the card */
+    background: rgba(var(--theme-color-dark), 0.6);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: visible;
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 10px 20px -5px rgba(0, 0, 0, 0.5);
+}
+
+.button-icon {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.dock-button::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(180deg,
+            rgba(var(--theme-color-primary), 0.8),
+            transparent 80%);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.dock-button:hover {
+    transform: translateY(-4px) scale(1.05);
+    background: rgba(var(--theme-color-primary), 0.2);
+    box-shadow:
+        0 0 30px rgba(var(--theme-color-primary), 0.4),
+        0 20px 40px -10px rgba(0, 0, 0, 0.6),
+        inset 0 0 20px rgba(var(--theme-color-primary), 0.2);
+    border-color: rgba(var(--theme-color-primary), 0.5);
+}
+
+.dock-button:hover .button-icon {
+    transform: rotate(90deg);
+}
+
+.dock-button:hover::before {
+    opacity: 1;
+}
+
+.dock-button:active {
+    transform: scale(0.95);
+}
+
+.button-icon {
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--color-text-primary);
+    z-index: 1;
+    line-height: 1;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.app-header {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.dna-container {
+    animation: fadeIn 1s ease-out 0.2s backwards;
+}
+
+.floating-dock {
+    animation: fadeIn 0.8s ease-out 0.4s backwards;
+}
+
+.sidebar {
+    animation: fadeIn 0.6s ease-out 0.1s backwards;
+}
+
+/* === Scrollbar (au cas où) === */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--glass-border-light);
+}
+
+/* === Submenu Styles === */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin-top: 4px;
+    /* Hide by default on collapsed sidebar to avoid phantom clicks if any */
+    pointer-events: none;
+}
+
+/* Show submenu when nav-item is hovered */
+.nav-item:hover .submenu {
+    max-height: 120px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.submenu-link {
+    display: block;
+    padding: 10px 16px 10px 52px;
+    /* Indented for hierarchy */
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    position: relative;
+    border-radius: 8px;
+    margin: 2px 8px;
+    white-space: nowrap;
+    /* Prevent wrapping */
+}
+
+/* Hover Effect - Violet Glass */
+.submenu-link:hover {
+    color: #fff;
+    background: rgba(var(--theme-color-primary), 0.15);
+}
+
+/* Decorative Dot */
+.submenu-link::before {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.submenu-link:hover::before {
+    background: rgb(var(--theme-color-primary));
+    box-shadow: 0 0 8px rgb(var(--theme-color-primary));
+    transform: translateY(-50%) scale(1.5);
+}
+
+/* Carousel Container */
+.cards-carousel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Card Updates for Carousel */
+.dna-card {
+    position: absolute !important;
+    left: 50%;
+    top: 50%;
+    margin-left: -180px;
+    /* Half of 360px width */
+    margin-top: -35vh;
+    /* Half of 70vh height */
+
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-origin: center center;
+
+    /* Default Hidden/Inactive State */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.9);
+}
+
+/* Adjust main layout margin to prevent overlap with dock if needed */
+/* The existing dna-card style had margin-bottom: 80px. 
+   Since we use absolute centering, we might need to shift Top slightly up 
+   to accomodate the dock, or trust the visual center. 
+   70vh leaves 30vh (15vh top, 15vh bottom). 15vh is plenty for header/navigation. */
+
+/* Active State - Center */
+.dna-card.active {
+    opacity: 1;
+    z-index: 10;
+    pointer-events: auto;
+    transform: translateX(0) scale(1);
+    filter: none;
+}
+
+/* Previous State - Slide Left + Depth */
+.dna-card.prev {
+    opacity: 0.3;
+    /* Adjusted opacity for "arrière plan" feel */
+    z-index: 5;
+    pointer-events: none;
+    /* Move left and push back */
+    transform: translateX(-70%) scale(0.85) rotateY(20deg) translateZ(-100px);
+    filter: brightness(0.5) blur(2px);
+}
+
+.dna-card.next {
+    opacity: 0.3;
+    z-index: 5;
+    pointer-events: none;
+    transform: translateX(70%) scale(0.85) rotateY(-20deg) translateZ(-100px);
+    filter: brightness(0.5) blur(2px);
+}
+
+/* New Theme Card Specifics */
+/* New Theme Card - Container Wrapper */
+.dna-card.new-theme-card {
+    /* Invisible Container allowing overflow */
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    overflow: visible;
+    /* Transitions handled by parent class, but we enable overflow here */
+}
+
+/* The Visible Glass Layer */
+.card-glass-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    overflow: hidden;
+    /* Grayscale Dark Glass Theme @NuanceDeGris */
+    background: rgba(30, 30, 35, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+
+    /* White Aura / Glow */
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(255, 255, 255, 0.12);
+    /* White Glow */
+
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s ease;
+}
+
+.dna-card.new-theme-card.active .card-glass-layer {
+    background: rgba(30, 30, 35, 0.85);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(255, 255, 255, 0.2);
+}
+
+/* Grayscale Gradient Overlay */
+.card-gradient.grayscale-gradient {
+    background: linear-gradient(180deg,
+            rgba(50, 50, 50, 0.4) 0%,
+            rgba(100, 100, 100, 0.1) 40%,
+            rgba(200, 200, 200, 0.05) 70%,
+            rgba(255, 255, 255, 0) 100%);
+    opacity: 0.8;
+}
+
+/* Cancel Button */
+.cancel-create-btn {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 20;
+}
+
+.cancel-create-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* Input Styling - Match Initial Theme Title */
+.input-group {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-name-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    /* Font matching .theme-title */
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    /* Extra Bold */
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    color: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    padding-bottom: 8px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.theme-name-input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* Subtle line under input */
+.input-line {
+    width: 60px;
+    /* Small centered line like a decorative element */
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-top: 8px;
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.theme-name-input:focus+.input-line {
+    width: 120px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* External Color Options Sidebar */
+.color-options-sidebar {
+    position: absolute;
+    right: -80px;
+    /* Adjusted for larger circles to stay outside */
+    top: 50%;
+    /* Center vertically */
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* Balanced spacing for the increased count */
+    padding: 0;
+    /* Absolutely no container background */
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.color-circle {
+    width: 32px;
+    /* Doubled size (x2) */
+    height: 32px;
+    border-radius: 50%;
+    /* Use the variable defined in HTML */
+    background-color: var(--circle-color, #fff);
+    /* Removed border for a cleaner, bolder look */
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    opacity: 0.7;
+}
+
+/* Distortion Effect on Hover */
+.color-circle:hover {
+    transform: scale(1.2) rotate(45deg);
+    opacity: 1;
+    /* Organic Blob Shape Distortion */
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    box-shadow: 0 0 25px var(--circle-color);
+}
+
+/* Active/Selected State */
+.color-circle.selected {
+    transform: scale(1.35);
+    opacity: 1;
+    border-radius: 50%;
+    /* Reset to perfect circle to indicate stability/selection */
+    box-shadow:
+        0 0 30px var(--circle-color),
+        0 0 0 2px #fff;
+    /* White ring */
+    z-index: 10;
+}
+
+/* === Manage Themes Mode === */
+.cards-carousel.manage-mode {
+    perspective: none;
+    display: flex;
+    justify-content: flex-start;
+    /* Start from left */
+    align-items: center;
+    overflow-x: auto;
+    /* Horizontal Scroll */
+    padding: 0 5vw;
+    /* Breathing room */
+    scroll-snap-type: x mandatory;
+    gap: 40px;
+
+    /* Scrollbar styling */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.cards-carousel.manage-mode::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.cards-carousel.manage-mode .dna-card {
+    position: relative !important;
+    /* Stack normally */
+    left: auto;
+    top: auto;
+    margin: 0 !important;
+    /* Reset margins */
+    transform: none !important;
+    /* No 3D */
+    opacity: 1 !important;
+    /* Always visible */
+    filter: none !important;
+    pointer-events: auto !important;
+
+    /* Layout for 3 cards */
+    flex: 0 0 30%;
+    min-width: 300px;
+    max-width: 360px;
+    height: 60vh;
+    /* Slightly reduced height */
+
+    scroll-snap-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* Simpler shadow */
+}
+
+.cards-carousel.manage-mode .dna-card:hover {
+    transform: translateY(-10px) !important;
+    z-index: 10;
+    /* Re-apply Aura with Theme Color */
+    box-shadow:
+        0 30px 60px -10px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.5),
+        0 0 50px rgba(var(--theme-rgb), 0.5),
+        0 0 100px rgba(var(--theme-rgb), 0.3);
+}
+
+/* Hide elements in manage mode */
+.floating-dock.hidden {
+    transform: translateY(200%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s ease;
+}
+
+.dna-card#new-card {
+    /* Ensure the new card form is hidden in manage list unless we want it there as a tile? */
+    /* Usually 'Manage' implies managing existing. 'Create' is separate. */
+    /* For now, let it be visible if it is in the list, but it has display:none if not active. */
+    /* Wait, #new-card usually needs .active to be visible. */
+    /* In manage mode, we force opacity: 1 !important on .dna-card. */
+    /* So #new-card might show up if present. */
+    /* We should probably hide it specifically if it's not the "New Created Card". */
+}
+
+.cards-carousel.manage-mode #new-card {
+    display: none !important;
+}
+
+/* === Theme Management Actions === */
+.card-actions {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-5px);
+}
+
+/* Reveal actions ONLY when hovering a card in Manage Mode */
+.cards-carousel.manage-mode .dna-card:hover .card-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(20, 20, 25, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.action-btn:hover {
+    /* Use theme color variable */
+    background: rgba(var(--theme-rgb), 0.2);
+    border-color: rgba(var(--theme-rgb), 0.6);
+    color: white;
+    box-shadow: 0 0 20px rgba(var(--theme-rgb), 0.3);
+    transform: scale(1.1);
+}
+
+/* === Edit Mode States === */
+.cards-carousel.manage-mode .dna-card.dimmed {
+    opacity: 0.2 !important;
+    transform: scale(0.9) !important;
+    filter: grayscale(0.8) blur(1px) !important;
+    pointer-events: none !important;
+    transition: all 0.4s ease;
+}
+
+.cards-carousel.manage-mode .dna-card.editing {
+    opacity: 1 !important;
+    transform: scale(1.05) !important;
+    z-index: 100 !important;
+    cursor: default;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.5) !important;
+    overflow: visible !important;
+    /* Show palette */
+    transition: all 0.4s ease;
+}
+
+/* Hide action buttons while editing */
+.cards-carousel.manage-mode .dna-card.editing .card-actions {
+    display: none;
+}
+
+/* Input style for Title Editing */
+.theme-title-input-edit {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-align: center;
+    width: 80%;
+    outline: none;
+    padding: 5px 0;
+}
+
+/* === Note Creation Sheet === */
+.note-creation-sheet {
+    position: fixed;
+    bottom: 0;
+    /* Sidebar width 80px. Centered in remaining space (3/4 width) */
+    left: calc(80px + (100vw - 80px) * 0.125);
+    width: calc((100vw - 80px) * 0.75);
+    height: 85vh;
+
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none;
+    border-radius: 32px 32px 0 0;
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+    transform: translateY(110%);
+    transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.note-creation-sheet.active {
+    transform: translateY(0);
+}
+
+.note-sheet-handle-bar {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin-bottom: 20px;
+}
+
+/* Hide Carousel when Note Sheet is active */
+.cards-carousel.hidden-view {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    filter: blur(10px);
+    transition: all 0.5s ease;
+}
+
+/* === Note Editor Content === */
+.note-header {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 0 40px;
+}
+
+.note-header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transition: border-color 0.3s ease;
+    padding-bottom: 5px;
+}
+
+.note-header-row:focus-within {
+    border-bottom-color: rgba(255, 255, 255, 0.8);
+}
+
+.note-title-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    padding: 10px 0;
+    outline: none;
+}
+
+.note-date-wrapper {
+    position: relative;
+    margin-left: 20px;
+    padding-bottom: 5px;
+    /* Alignment */
+}
+
+#note-date-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#note-date-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.note-body {
+    flex: 1;
+    width: 100%;
+    padding: 0 40px 80px 40px;
+    /* Bottom padding for toolbar */
+    overflow-y: auto;
+}
+
+.note-content-area {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    resize: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Scrollbar for note content */
+.note-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.note-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+/* Footer Toolbar */
+.note-footer-toolbar {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    background: rgba(30, 30, 35, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 12px 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 210;
+}
+
+.note-action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.note-action-btn.icon-only {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.note-action-btn.save-btn {
+    padding: 10px 24px;
+    background: white;
+    color: black;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+}
+
+.note-action-btn.save-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+/* === Custom Date Picker === */
+.custom-date-picker {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 280px;
+    background: rgba(30, 30, 35, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 300;
+    margin-top: 10px;
+
+    transform-origin: top right;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.custom-date-picker.hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.cal-nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.cal-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cal-month-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 8px;
+}
+
+.calendar-weekdays span {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Inter', sans-serif;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.calendar-day.empty {
+    cursor: default;
+    background: transparent !important;
+}
+
+.calendar-day.selected {
+    background: white;
+    color: black;
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+}
+
+.calendar-day.today {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* === Note Close Arrow === */
+.note-close-arrow {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    z-index: 250;
+    padding: 10px;
+    animation: arrowPulse 2.5s ease-in-out infinite;
+    transition: color 0.3s ease;
+}
+
+.note-close-arrow:hover {
+    color: rgba(255, 255, 255, 0.7);
+    animation-play-state: paused;
+}
+
+@keyframes arrowPulse {
+
+    0%,
+    100% {
+        opacity: 0.2;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: translateX(-50%) translateY(5px);
+    }
+}
+
+/* === Theme Selector === */
+.note-theme-selector {
+    position: relative;
+    margin-left: 15px;
+}
+
+.theme-capsule {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-capsule:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.theme-capsule.selected {
+    border-style: solid;
+    background: var(--selected-theme-color, rgba(123, 97, 255, 0.3));
+    border-color: var(--selected-theme-color, #7b61ff);
+}
+
+.capsule-icon {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+}
+
+.theme-capsule.selected .capsule-icon {
+    display: none;
+}
+
+/* Theme Dropdown */
+.theme-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    background: rgba(30, 30, 35, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    padding: 12px;
+    z-index: 350;
+
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.theme-dropdown.hidden {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.9);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.dropdown-header {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+}
+
+.theme-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.theme-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.theme-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-item-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.theme-item-name {
+    font-size: 14px;
+    color: white;
+    font-weight: 500;
+}
+
+.theme-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.theme-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
