@@ -400,7 +400,15 @@ class CellApp {
                 capsule.style.setProperty('--selected-theme-color', theme.color);
                 capsule.innerHTML = ''; // Remove "?" icon
                 capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
+
+                // CRITICAL: Set for saveNote to use
+                this.selectedNoteTheme = theme;
             }
+        }
+
+        // CRITICAL: Set note date from existing note
+        if (note.date_display) {
+            this.noteDate = new Date(note.date_display);
         }
 
         // Initial Toggle State
