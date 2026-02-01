@@ -432,7 +432,7 @@ body {
 /* === DNA Card - Atomic Design === */
 .dna-card {
     position: relative;
-    width: 320px;
+    width: 288px;
     height: 65vh;
     max-height: 640px;
     min-height: 480px;
@@ -834,8 +834,8 @@ body {
     position: absolute !important;
     left: 50%;
     top: 50%;
-    margin-left: -160px;
-    /* Half of 320px width */
+    margin-left: -144px;
+    /* Half of 288px width */
     margin-top: -32.5vh;
     /* Half of 65vh height */
 
