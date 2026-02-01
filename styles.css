@@ -1107,10 +1107,10 @@ body {
     filter: none !important;
     pointer-events: auto !important;
 
-    /* Layout for 3 cards */
-    flex: 0 0 30%;
-    min-width: 300px;
-    max-width: 360px;
+    /* Layout for cards */
+    flex: 0 0 288px;
+    min-width: 288px;
+    max-width: 288px;
     height: 60vh;
     /* Slightly reduced height */
 
