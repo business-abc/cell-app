@@ -196,6 +196,9 @@ class CellApp {
 
         // Feature: Theme Details View (Split)
         this.initThemeView();
+
+        // Feature: Note View Controls
+        this.initNoteViewControls();
     }
 
     initSidebarNav() {
@@ -341,7 +344,9 @@ class CellApp {
 
             carousel.classList.remove('hidden-view'); // Restore carousel visibility
         } else {
-            // Opening
+            // Opening for New Note
+            this.setNoteMode('create');
+
             sheet.classList.add('active');
             carousel.classList.add('hidden-view');
             if (button) button.innerHTML = '<span class="button-icon" style="font-size: 28px; line-height: 24px;">×</span>';
@@ -1694,34 +1699,7 @@ class CellApp {
 
             if (data && data.length > 0) {
                 data.forEach(note => {
-                    const el = document.createElement('div');
-                    el.className = 'note-preview-card';
-
-                    const date = new Date(note.date_display).toLocaleDateString('fr-FR', {
-                        day: 'numeric', month: 'long', year: 'numeric'
-                    });
-
-                    // Text preview - Preserve HTML structure
-                    // We inject the HTML directly. CSS will handle line clamping.
-                    // However, we want to ensure we don't inject massive images or iframes in preview if we don't want to.
-                    // For now, let's trust the content is safe (sanitized on save ideally, or just contenteditable HTML)
-                    let contentHtml = note.content || '';
-
-                    // Simple safety check: if it's way too long, maybe truncate raw string first? 
-                    // But truncating HTML string is risky (unclosed tags).
-                    // Better to rely on CSS overflow hidden.
-
-                    el.innerHTML = `
-                        <div class="note-preview-date">${date}</div>
-                        <div class="note-preview-title">${note.title || 'Sans titre'}</div>
-                        <div class="note-preview-snippet">${contentHtml}</div>
-                        <div class="note-interaction-indicator">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 18l6-6-6-6" />
-                            </svg>
-                        </div>
-                     `;
-
+                    const el = this.createNoteCard(note);
                     container.appendChild(el);
                 });
             } else {
