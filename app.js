@@ -1192,36 +1192,36 @@ class CellApp {
         const createThemeTabs = Array.from(document.querySelectorAll('.submenu-link'));
         const createThemeBtn = createThemeTabs.find(el => el.textContent.trim() === 'Créer un thème');
 
-        const mainCard = document.getElementById('main-card');
         const newCard = document.getElementById('new-card');
         const cancelBtn = document.querySelector('.cancel-create-btn');
         const themeInput = document.querySelector('.theme-name-input');
 
-        if (createThemeBtn && mainCard && newCard) {
+        if (createThemeBtn && newCard) {
             createThemeBtn.addEventListener('click', (e) => {
                 e.preventDefault();
 
-                // Effect: Slide current left, show new center
-                mainCard.classList.remove('active');
-                mainCard.classList.add('prev');
+                // Hide all current cards
+                const allCards = this.getThemeCards();
+                allCards.forEach(card => {
+                    card.classList.remove('active');
+                    card.classList.add('prev');
+                });
 
+                // Show creation card
                 newCard.classList.add('active');
 
-                // Initialize Creation DNA (Empty Strand) if needed
-                // Delay slightly to ensure layout is computed (width > 0)
+                // Initialize Creation DNA if needed
                 requestAnimationFrame(() => {
                     if (!this.creationHelix) {
                         const canvas = document.getElementById('dna-canvas-creation');
                         if (canvas) {
                             this.creationHelix = new DNAHelix(canvas);
-                            // No demo() call -> Empty strand by default
                         }
                     } else {
-                        // Resizing safety check if it was initialized while hidden
                         this.creationHelix.setupCanvas();
                     }
 
-                    // Trigger Default Color (First one: Red)
+                    // Trigger Default Color (First one)
                     const circles = document.querySelectorAll('.color-options-sidebar .color-circle');
                     if (circles.length > 0) {
                         circles[0].click();
@@ -1240,8 +1240,8 @@ class CellApp {
 
                 newCard.classList.remove('active');
 
-                mainCard.classList.remove('prev');
-                mainCard.classList.add('active');
+                // Restore carousel view
+                this.updateCarouselView();
 
                 if (themeInput) themeInput.value = '';
 
