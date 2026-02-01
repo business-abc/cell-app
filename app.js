@@ -281,8 +281,13 @@ class CellApp {
         if (isActive) {
             // Closing
             sheet.classList.remove('active');
-            carousel.classList.remove('hidden-view');
             if (button) button.innerHTML = '<span class="button-icon">+</span>';
+
+            // Remove Escape listener
+            if (this.escapeHandler) {
+                document.removeEventListener('keydown', this.escapeHandler);
+                this.escapeHandler = null;
+            }
 
             // Reset File Selection
             this.selectedFile = null;
