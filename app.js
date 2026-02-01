@@ -151,11 +151,21 @@ class CellApp {
         const attachBtn = document.getElementById('attach-file-btn');
         const fileInput = document.getElementById('note-file-input');
         if (attachBtn && fileInput) {
-            attachBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => this.handleFileSelection(e));
+            console.log('Attach button found');
+            attachBtn.addEventListener('click', (e) => {
+                console.log('Attach button clicked');
+                e.preventDefault(); // Prevent any default button behavior
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', (e) => {
+                console.log('File selected');
+                this.handleFileSelection(e);
+            });
 
             // Allow re-selecting same file
             fileInput.addEventListener('click', (e) => e.target.value = null);
+        } else {
+            console.error('Attach button or file input not found', { attachBtn, fileInput });
         }
 
         // Profil Logout
@@ -274,285 +284,280 @@ class CellApp {
             carousel.classList.remove('hidden-view');
             if (button) button.innerHTML = '<span class="button-icon">+</span>';
 
-            // Remove Escape listener
-            document.removeEventListener('keydown', this.escapeHandler);
-            this.escapeHandler = null;
-        }
+            // Reset File Selection
+            this.selectedFile = null;
+            const fileDisplay = document.getElementById('file-name-display');
+            const fileInput = document.getElementById('note-file-input');
+            if (fileDisplay) fileDisplay.classList.add('hidden');
+            if (fileInput) fileInput.value = null;
+        } else {
+            // Opening
+            sheet.classList.add('active');
+            carousel.classList.add('hidden-view');
+            if (button) button.innerHTML = '<span class="button-icon" style="font-size: 28px; line-height: 24px;">×</span>';
 
-        // Reset File Selection
-        this.selectedFile = null;
-        const fileDisplay = document.getElementById('file-name-display');
-        const fileInput = document.getElementById('note-file-input');
-        if (fileDisplay) fileDisplay.classList.add('hidden');
-        if (fileInput) fileInput.value = null;
-    } else {
-    // Opening
-    sheet.classList.add('active');
-    carousel.classList.add('hidden-view');
-    if (button) button.innerHTML = '<span class="button-icon" style="font-size: 28px; line-height: 24px;">×</span>';
+            // Initialize Date
+            setTimeout(() => this.initNoteDateListeners(), 50);
 
-    // Initialize Date
-    setTimeout(() => this.initNoteDateListeners(), 50);
+            // Initialize Theme Selector
+            setTimeout(() => this.initThemeSelector(), 50);
 
-    // Initialize Theme Selector
-    setTimeout(() => this.initThemeSelector(), 50);
+            // Close Arrow Listener
+            const closeArrow = document.getElementById('note-close-arrow');
+            if (closeArrow) {
+                closeArrow.onclick = () => this.toggleNoteCreationMode();
+            }
 
-    // Close Arrow Listener
-    const closeArrow = document.getElementById('note-close-arrow');
-    if (closeArrow) {
-        closeArrow.onclick = () => this.toggleNoteCreationMode();
-    }
-
-    // Escape Key Listener
-    this.escapeHandler = (e) => {
-        if (e.key === 'Escape') {
-            this.toggleNoteCreationMode();
-        }
-    };
-    document.addEventListener('keydown', this.escapeHandler);
-}
-    }
-
-initNoteDateListeners() {
-    const wrapper = document.getElementById('date-wrapper');
-    const picker = document.getElementById('custom-date-picker');
-    const dateText = document.getElementById('note-date-text');
-
-    if (!wrapper || !picker || !dateText) return;
-
-    // State Init
-    if (!this.noteDate) this.noteDate = new Date();
-    this.pickerViewDate = new Date(this.noteDate);
-
-    this.updateDateDisplay(this.noteDate, dateText);
-
-    // Toggle Logic
-    wrapper.onclick = (e) => {
-        if (e.target.closest('.custom-date-picker')) return;
-
-        const isHidden = picker.classList.contains('hidden');
-        if (isHidden) {
-            picker.classList.remove('hidden');
-            this.renderCalendar();
-
-            const outsideClick = (ev) => {
-                if (!wrapper.contains(ev.target)) {
-                    picker.classList.add('hidden');
-                    document.removeEventListener('click', outsideClick);
+            // Escape Key Listener
+            this.escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    this.toggleNoteCreationMode();
                 }
             };
-            setTimeout(() => document.addEventListener('click', outsideClick), 0);
-        } else {
-            picker.classList.add('hidden');
+            document.addEventListener('keydown', this.escapeHandler);
         }
-    };
-
-    // Navigation
-    const prevBtn = document.getElementById('cal-prev');
-    const nextBtn = document.getElementById('cal-next');
-
-    if (prevBtn) prevBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.pickerViewDate.setMonth(this.pickerViewDate.getMonth() - 1);
-        this.renderCalendar();
-    };
-
-    if (nextBtn) nextBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.pickerViewDate.setMonth(this.pickerViewDate.getMonth() + 1);
-        this.renderCalendar();
-    };
-}
-
-renderCalendar() {
-    const vDate = this.pickerViewDate;
-    const sDate = this.noteDate;
-    const grid = document.getElementById('calendar-days-grid');
-    const label = document.getElementById('cal-month-year');
-    const picker = document.getElementById('custom-date-picker');
-    const dateText = document.getElementById('note-date-text');
-
-    if (!grid || !label) return;
-
-    const year = vDate.getFullYear();
-    const month = vDate.getMonth();
-
-    // Capitalize Month
-    const monthName = vDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-    label.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-    grid.innerHTML = '';
-
-    // Days Logic (Mon start)
-    const firstDay = new Date(year, month, 1).getDay();
-    // Su=0, Mo=1... Sa=6. Target: Mo=0... Su=6
-    let startDay = (firstDay + 6) % 7;
-
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    for (let i = 0; i < startDay; i++) {
-        const div = document.createElement('div');
-        div.className = 'calendar-day empty';
-        grid.appendChild(div);
     }
 
-    const today = new Date();
-    for (let i = 1; i <= daysInMonth; i++) {
-        const div = document.createElement('div');
-        div.className = 'calendar-day';
-        div.textContent = i;
+    initNoteDateListeners() {
+        const wrapper = document.getElementById('date-wrapper');
+        const picker = document.getElementById('custom-date-picker');
+        const dateText = document.getElementById('note-date-text');
 
-        if (sDate && i === sDate.getDate() && month === sDate.getMonth() && year === sDate.getFullYear()) {
-            div.classList.add('selected');
-        }
-        if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-            div.classList.add('today');
-        }
+        if (!wrapper || !picker || !dateText) return;
 
-        div.onclick = (e) => {
-            e.stopPropagation();
-            this.noteDate = new Date(year, month, i);
-            this.updateDateDisplay(this.noteDate, dateText);
-            picker.classList.add('hidden');
-            this.renderCalendar(); // Refresh selection visual
+        // State Init
+        if (!this.noteDate) this.noteDate = new Date();
+        this.pickerViewDate = new Date(this.noteDate);
+
+        this.updateDateDisplay(this.noteDate, dateText);
+
+        // Toggle Logic
+        wrapper.onclick = (e) => {
+            if (e.target.closest('.custom-date-picker')) return;
+
+            const isHidden = picker.classList.contains('hidden');
+            if (isHidden) {
+                picker.classList.remove('hidden');
+                this.renderCalendar();
+
+                const outsideClick = (ev) => {
+                    if (!wrapper.contains(ev.target)) {
+                        picker.classList.add('hidden');
+                        document.removeEventListener('click', outsideClick);
+                    }
+                };
+                setTimeout(() => document.addEventListener('click', outsideClick), 0);
+            } else {
+                picker.classList.add('hidden');
+            }
         };
-        grid.appendChild(div);
+
+        // Navigation
+        const prevBtn = document.getElementById('cal-prev');
+        const nextBtn = document.getElementById('cal-next');
+
+        if (prevBtn) prevBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.pickerViewDate.setMonth(this.pickerViewDate.getMonth() - 1);
+            this.renderCalendar();
+        };
+
+        if (nextBtn) nextBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.pickerViewDate.setMonth(this.pickerViewDate.getMonth() + 1);
+            this.renderCalendar();
+        };
     }
-}
 
-updateDateDisplay(dateObj, textElement) {
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    textElement.textContent = dateObj.toLocaleDateString('fr-FR', options);
-}
+    renderCalendar() {
+        const vDate = this.pickerViewDate;
+        const sDate = this.noteDate;
+        const grid = document.getElementById('calendar-days-grid');
+        const label = document.getElementById('cal-month-year');
+        const picker = document.getElementById('custom-date-picker');
+        const dateText = document.getElementById('note-date-text');
 
-initThemeSelector() {
-    const selector = document.getElementById('theme-selector');
-    const capsule = document.getElementById('theme-capsule');
-    const dropdown = document.getElementById('theme-dropdown');
-    const themeList = document.getElementById('theme-list');
+        if (!grid || !label) return;
 
-    if (!selector || !capsule || !dropdown || !themeList) return;
+        const year = vDate.getFullYear();
+        const month = vDate.getMonth();
 
-    // Populate Themes
-    this.populateThemeDropdown(themeList);
+        // Capitalize Month
+        const monthName = vDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        label.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-    // Toggle Dropdown
-    capsule.onclick = (e) => {
-        e.stopPropagation();
-        const isHidden = dropdown.classList.contains('hidden');
+        grid.innerHTML = '';
 
-        // Close date picker if open
-        const datePicker = document.getElementById('custom-date-picker');
-        if (datePicker) datePicker.classList.add('hidden');
+        // Days Logic (Mon start)
+        const firstDay = new Date(year, month, 1).getDay();
+        // Su=0, Mo=1... Sa=6. Target: Mo=0... Su=6
+        let startDay = (firstDay + 6) % 7;
 
-        if (isHidden) {
-            dropdown.classList.remove('hidden');
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            const outsideClick = (ev) => {
-                if (!selector.contains(ev.target)) {
-                    dropdown.classList.add('hidden');
-                    document.removeEventListener('click', outsideClick);
-                }
+        for (let i = 0; i < startDay; i++) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day empty';
+            grid.appendChild(div);
+        }
+
+        const today = new Date();
+        for (let i = 1; i <= daysInMonth; i++) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day';
+            div.textContent = i;
+
+            if (sDate && i === sDate.getDate() && month === sDate.getMonth() && year === sDate.getFullYear()) {
+                div.classList.add('selected');
+            }
+            if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                div.classList.add('today');
+            }
+
+            div.onclick = (e) => {
+                e.stopPropagation();
+                this.noteDate = new Date(year, month, i);
+                this.updateDateDisplay(this.noteDate, dateText);
+                picker.classList.add('hidden');
+                this.renderCalendar(); // Refresh selection visual
             };
-            setTimeout(() => document.addEventListener('click', outsideClick), 0);
-        } else {
+            grid.appendChild(div);
+        }
+    }
+
+    updateDateDisplay(dateObj, textElement) {
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        textElement.textContent = dateObj.toLocaleDateString('fr-FR', options);
+    }
+
+    initThemeSelector() {
+        const selector = document.getElementById('theme-selector');
+        const capsule = document.getElementById('theme-capsule');
+        const dropdown = document.getElementById('theme-dropdown');
+        const themeList = document.getElementById('theme-list');
+
+        if (!selector || !capsule || !dropdown || !themeList) return;
+
+        // Populate Themes
+        this.populateThemeDropdown(themeList);
+
+        // Toggle Dropdown
+        capsule.onclick = (e) => {
+            e.stopPropagation();
+            const isHidden = dropdown.classList.contains('hidden');
+
+            // Close date picker if open
+            const datePicker = document.getElementById('custom-date-picker');
+            if (datePicker) datePicker.classList.add('hidden');
+
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+
+                const outsideClick = (ev) => {
+                    if (!selector.contains(ev.target)) {
+                        dropdown.classList.add('hidden');
+                        document.removeEventListener('click', outsideClick);
+                    }
+                };
+                setTimeout(() => document.addEventListener('click', outsideClick), 0);
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        };
+    }
+
+    populateThemeDropdown(listElement) {
+        listElement.innerHTML = '';
+
+        // Add created themes
+        if (this.themes && this.themes.length > 0) {
+            this.themes.forEach(theme => {
+                const item = this.createThemeItem(theme.id, theme.name, theme.color);
+                listElement.appendChild(item);
+            });
+        }
+    }
+
+    createThemeItem(id, name, color) {
+        const item = document.createElement('div');
+        item.className = 'theme-item';
+        item.dataset.themeId = id;
+
+        const colorCircle = document.createElement('div');
+        colorCircle.className = 'theme-item-color';
+        colorCircle.style.background = color;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'theme-item-name';
+        nameSpan.textContent = name;
+
+        item.appendChild(colorCircle);
+        item.appendChild(nameSpan);
+
+        item.onclick = (e) => {
+            e.stopPropagation();
+            this.selectNoteTheme(id, name, color);
+        };
+
+        return item;
+    }
+
+    selectNoteTheme(themeId, themeName, themeColor) {
+        this.selectedNoteTheme = { id: themeId, name: themeName, color: themeColor };
+
+        const capsule = document.getElementById('theme-capsule');
+        const dropdown = document.getElementById('theme-dropdown');
+
+        if (capsule) {
+            capsule.classList.add('selected');
+            capsule.style.setProperty('--selected-theme-color', themeColor);
+            capsule.innerHTML = ''; // Remove "?" icon
+        }
+
+        if (dropdown) {
             dropdown.classList.add('hidden');
         }
-    };
-}
-
-populateThemeDropdown(listElement) {
-    listElement.innerHTML = '';
-
-    // Add created themes
-    if (this.themes && this.themes.length > 0) {
-        this.themes.forEach(theme => {
-            const item = this.createThemeItem(theme.id, theme.name, theme.color);
-            listElement.appendChild(item);
-        });
     }
-}
-
-createThemeItem(id, name, color) {
-    const item = document.createElement('div');
-    item.className = 'theme-item';
-    item.dataset.themeId = id;
-
-    const colorCircle = document.createElement('div');
-    colorCircle.className = 'theme-item-color';
-    colorCircle.style.background = color;
-
-    const nameSpan = document.createElement('span');
-    nameSpan.className = 'theme-item-name';
-    nameSpan.textContent = name;
-
-    item.appendChild(colorCircle);
-    item.appendChild(nameSpan);
-
-    item.onclick = (e) => {
-        e.stopPropagation();
-        this.selectNoteTheme(id, name, color);
-    };
-
-    return item;
-}
-
-selectNoteTheme(themeId, themeName, themeColor) {
-    this.selectedNoteTheme = { id: themeId, name: themeName, color: themeColor };
-
-    const capsule = document.getElementById('theme-capsule');
-    const dropdown = document.getElementById('theme-dropdown');
-
-    if (capsule) {
-        capsule.classList.add('selected');
-        capsule.style.setProperty('--selected-theme-color', themeColor);
-        capsule.innerHTML = ''; // Remove "?" icon
-    }
-
-    if (dropdown) {
-        dropdown.classList.add('hidden');
-    }
-}
 
     async loadThemes() {
-    try {
-        const { data, error } = await supabase.from('themes').select('*').order('created_at', { ascending: true });
+        try {
+            const { data, error } = await supabase.from('themes').select('*').order('created_at', { ascending: true });
 
-        if (error) throw error;
+            if (error) throw error;
 
-        if (data && data.length > 0) {
-            // Wait for DOM
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => {
+            if (data && data.length > 0) {
+                // Wait for DOM
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        data.forEach(t => this.renderThemeCard(t.id, t.name, t.color));
+                        this.updateCarouselView();
+                    });
+                } else {
                     data.forEach(t => this.renderThemeCard(t.id, t.name, t.color));
-                    this.updateCarouselView();
-                });
-            } else {
-                data.forEach(t => this.renderThemeCard(t.id, t.name, t.color));
-                // Update view after rendering all
-                setTimeout(() => this.updateCarouselView(), 100);
+                    // Update view after rendering all
+                    setTimeout(() => this.updateCarouselView(), 100);
+                }
             }
+        } catch (e) {
+            console.error('Erreur chargement thèmes:', e);
+            this.showToast("Mode hors ligne ou erreur connexion");
         }
-    } catch (e) {
-        console.error('Erreur chargement thèmes:', e);
-        this.showToast("Mode hors ligne ou erreur connexion");
     }
-}
 
-renderThemeCard(themeId, name, colorStr) {
-    // Parse Color
-    const rgb = this.parseColorToRgb(colorStr);
-    const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
-    const canvasId = 'dna-canvas-' + themeId;
+    renderThemeCard(themeId, name, colorStr) {
+        // Parse Color
+        const rgb = this.parseColorToRgb(colorStr);
+        const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+        const canvasId = 'dna-canvas-' + themeId;
 
-    // HTML Template
-    const cardHtml = document.createElement('div');
-    cardHtml.className = 'dna-card new-created-card';
-    cardHtml.id = themeId;
+        // HTML Template
+        const cardHtml = document.createElement('div');
+        cardHtml.className = 'dna-card new-created-card';
+        cardHtml.id = themeId;
 
-    cardHtml.style.setProperty('--theme-rgb', rgbString);
+        cardHtml.style.setProperty('--theme-rgb', rgbString);
 
-    cardHtml.innerHTML = `
+        cardHtml.innerHTML = `
             <div class="card-actions">
                 <div class="action-btn edit-btn" title="Éditer">
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -575,89 +580,89 @@ renderThemeCard(themeId, name, colorStr) {
             </div>
         `;
 
-    // Insert into Carousel
-    const carousel = document.querySelector('.cards-carousel');
-    const newCardForm = document.getElementById('new-card');
-    if (carousel && newCardForm) {
-        carousel.insertBefore(cardHtml, newCardForm);
-    }
-
-    // Init DNA
-    requestAnimationFrame(() => {
-        const canvas = document.getElementById(canvasId);
-        if (canvas) {
-            const helix = new DNAHelix(canvas);
-            helix.setTheme(colorStr); // Ensure color is set directly
-
-            // Add to internal list
-            this.themes.push({ id: themeId, name, color: colorStr, helix });
-
-            // Demo visuals
-            const indices = [2, 5, 8, 12, 15, 18];
-            indices.forEach(idx => helix.fillNucleotide(idx, colorStr, themeId));
+        // Insert into Carousel
+        const carousel = document.querySelector('.cards-carousel');
+        const newCardForm = document.getElementById('new-card');
+        if (carousel && newCardForm) {
+            carousel.insertBefore(cardHtml, newCardForm);
         }
-    });
-}
+
+        // Init DNA
+        requestAnimationFrame(() => {
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                const helix = new DNAHelix(canvas);
+                helix.setTheme(colorStr); // Ensure color is set directly
+
+                // Add to internal list
+                this.themes.push({ id: themeId, name, color: colorStr, helix });
+
+                // Demo visuals
+                const indices = [2, 5, 8, 12, 15, 18];
+                indices.forEach(idx => helix.fillNucleotide(idx, colorStr, themeId));
+            }
+        });
+    }
 
     async createTheme(name, colorStr) {
-    // Init themes storage if needed
-    if (!this.themes) this.themes = [];
+        // Init themes storage if needed
+        if (!this.themes) this.themes = [];
 
-    const themeId = self.crypto.randomUUID();
+        const themeId = self.crypto.randomUUID();
 
-    try {
-        // DB Insert
-        const { error } = await supabase.from('themes').insert([
-            { id: themeId, name: name, color: colorStr }
-        ]);
+        try {
+            // DB Insert
+            const { error } = await supabase.from('themes').insert([
+                { id: themeId, name: name, color: colorStr }
+            ]);
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // Render UI
-        this.renderThemeCard(themeId, name, colorStr);
+            // Render UI
+            this.renderThemeCard(themeId, name, colorStr);
 
-        // Transition
-        const newCardForm = document.getElementById('new-card');
-        if (newCardForm) newCardForm.classList.remove('active');
+            // Transition
+            const newCardForm = document.getElementById('new-card');
+            if (newCardForm) newCardForm.classList.remove('active');
 
-        // Update Carousel State
-        setTimeout(() => {
-            const card = document.getElementById(themeId);
-            const cards = this.getThemeCards();
-            if (card) {
-                this.currentCardIndex = cards.indexOf(card);
-                this.updateCarouselView();
+            // Update Carousel State
+            setTimeout(() => {
+                const card = document.getElementById(themeId);
+                const cards = this.getThemeCards();
+                if (card) {
+                    this.currentCardIndex = cards.indexOf(card);
+                    this.updateCarouselView();
+                }
+            }, 100);
+
+            // Reset Creation Form
+            const input = document.querySelector('.theme-name-input');
+            if (input) input.value = '';
+            document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+            if (this.creationHelix) {
+                this.creationHelix.nucleotides.forEach(n => { n.filled = false; });
             }
-        }, 100);
+            this.updateValidationState();
 
-        // Reset Creation Form
-        const input = document.querySelector('.theme-name-input');
-        if (input) input.value = '';
-        document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
-        if (this.creationHelix) {
-            this.creationHelix.nucleotides.forEach(n => { n.filled = false; });
+            this.showToast(`Thème "${name}" créé avec succès !`);
+
+        } catch (e) {
+            console.error(e);
+            this.showToast("Erreur lors de la création du thème.");
         }
-        this.updateValidationState();
-
-        this.showToast(`Thème "${name}" créé avec succès !`);
-
-    } catch (e) {
-        console.error(e);
-        this.showToast("Erreur lors de la création du thème.");
-    }
-}
-
-showToast(message) {
-    // Créer un toast notification style iOS
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
     }
 
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    toast.style.cssText = `
+    showToast(message) {
+        // Créer un toast notification style iOS
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        toast.style.cssText = `
             position: fixed;
             top: 24px;
             right: 24px;
@@ -677,224 +682,224 @@ showToast(message) {
             transition: all 0.3s ease;
         `;
 
-    document.body.appendChild(toast);
+        document.body.appendChild(toast);
 
-    // Animation d'entrée
-    requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
-    });
+        // Animation d'entrée
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
 
-    // Disparition
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 2500);
-}
+        // Disparition
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    }
 
-setupCarousel() {
-    const carousel = document.querySelector('.cards-carousel');
-    if (!carousel) return;
+    setupCarousel() {
+        const carousel = document.querySelector('.cards-carousel');
+        if (!carousel) return;
 
-    // State
-    this.currentCardIndex = 0;
-    this.touchStartX = 0;
-    this.touchEndX = 0;
-    this.mouseDownX = 0;
+        // State
+        this.currentCardIndex = 0;
+        this.touchStartX = 0;
+        this.touchEndX = 0;
+        this.mouseDownX = 0;
 
-    // Initial Update
-    this.updateCarouselView();
+        // Initial Update
+        this.updateCarouselView();
 
-    // Touch Events
-    carousel.addEventListener('touchstart', (e) => {
-        const newCard = document.getElementById('new-card');
-        if (newCard && newCard.classList.contains('active')) return;
+        // Touch Events
+        carousel.addEventListener('touchstart', (e) => {
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
 
-        this.touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+            this.touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
 
-    carousel.addEventListener('touchend', (e) => {
-        const newCard = document.getElementById('new-card');
-        if (newCard && newCard.classList.contains('active')) return;
+        carousel.addEventListener('touchend', (e) => {
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
 
-        this.touchEndX = e.changedTouches[0].screenX;
-        this.handleSwipe();
-    }, { passive: true });
+            this.touchEndX = e.changedTouches[0].screenX;
+            this.handleSwipe();
+        }, { passive: true });
 
-    // Mouse Events
-    carousel.addEventListener('mousedown', (e) => {
-        const newCard = document.getElementById('new-card');
-        if (newCard && newCard.classList.contains('active')) return;
-        this.mouseDownX = e.screenX;
-    });
+        // Mouse Events
+        carousel.addEventListener('mousedown', (e) => {
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
+            this.mouseDownX = e.screenX;
+        });
 
-    carousel.addEventListener('mouseup', (e) => {
-        const newCard = document.getElementById('new-card');
-        if (newCard && newCard.classList.contains('active')) return;
-        const diff = e.screenX - this.mouseDownX;
+        carousel.addEventListener('mouseup', (e) => {
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
+            const diff = e.screenX - this.mouseDownX;
+            const threshold = 50;
+            if (diff < -threshold) this.navigateCarousel(1);
+            if (diff > threshold) this.navigateCarousel(-1);
+        });
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            // Checks to ensure we are in the main carousel view
+            const noteSheet = document.getElementById('note-sheet');
+            if (noteSheet && noteSheet.classList.contains('active')) return;
+
+            const newCard = document.getElementById('new-card');
+            if (newCard && newCard.classList.contains('active')) return;
+
+            if (this.isEditing) return;
+
+            if (e.key === 'ArrowLeft') {
+                this.navigateCarousel(-1);
+            } else if (e.key === 'ArrowRight') {
+                this.navigateCarousel(1);
+            }
+        });
+    }
+
+    handleSwipe() {
         const threshold = 50;
-        if (diff < -threshold) this.navigateCarousel(1);
-        if (diff > threshold) this.navigateCarousel(-1);
-    });
-
-    // Keyboard Navigation
-    document.addEventListener('keydown', (e) => {
-        // Checks to ensure we are in the main carousel view
-        const noteSheet = document.getElementById('note-sheet');
-        if (noteSheet && noteSheet.classList.contains('active')) return;
-
-        const newCard = document.getElementById('new-card');
-        if (newCard && newCard.classList.contains('active')) return;
-
-        if (this.isEditing) return;
-
-        if (e.key === 'ArrowLeft') {
-            this.navigateCarousel(-1);
-        } else if (e.key === 'ArrowRight') {
+        if (this.touchEndX < this.touchStartX - threshold) {
+            // Swipe Left -> Next
             this.navigateCarousel(1);
         }
-    });
-}
-
-handleSwipe() {
-    const threshold = 50;
-    if (this.touchEndX < this.touchStartX - threshold) {
-        // Swipe Left -> Next
-        this.navigateCarousel(1);
-    }
-    if (this.touchEndX > this.touchStartX + threshold) {
-        // Swipe Right -> Prev
-        this.navigateCarousel(-1);
-    }
-}
-
-navigateCarousel(direction) {
-    const cards = this.getThemeCards();
-    if (cards.length <= 1) return;
-
-    // Update Index
-    this.currentCardIndex = (this.currentCardIndex + direction + cards.length) % cards.length;
-
-    this.updateCarouselView();
-}
-
-updateCarouselView() {
-    const cards = this.getThemeCards();
-    if (cards.length === 0) return;
-
-    // Reset all classes
-    cards.forEach(card => {
-        card.classList.remove('active', 'prev', 'next');
-        // Ensure visibility for active/prev/next is handled by CSS (others are hidden?)
-        // If css default is opacity: 0, then removing classes hides them. Good.
-    });
-
-    // Set Active
-    cards[this.currentCardIndex].classList.add('active');
-
-    // Set Prev (Loop)
-    const prevIndex = (this.currentCardIndex - 1 + cards.length) % cards.length;
-    if (cards.length > 1) {
-        cards[prevIndex].classList.add('prev');
+        if (this.touchEndX > this.touchStartX + threshold) {
+            // Swipe Right -> Prev
+            this.navigateCarousel(-1);
+        }
     }
 
-    // Set Next (Loop)
-    const nextIndex = (this.currentCardIndex + 1) % cards.length;
-    if (cards.length > 2) {
-        // Only if we have at least 3 cards do we show Next distinct from prev
-        cards[nextIndex].classList.add('next');
-    } else if (cards.length === 2) {
-        // With 2 cards, one is Active, one is Prev. 
-        // Swipe Left (Next) -> Active becomes Prev, Prev becomes Active.
-        // Logic holds. Visually we only show Prev.
+    navigateCarousel(direction) {
+        const cards = this.getThemeCards();
+        if (cards.length <= 1) return;
+
+        // Update Index
+        this.currentCardIndex = (this.currentCardIndex + direction + cards.length) % cards.length;
+
+        this.updateCarouselView();
     }
-}
 
-getThemeCards() {
-    const allCards = Array.from(document.querySelectorAll('.dna-card'));
-    return allCards.filter(c => c.id !== 'new-card');
-}
+    updateCarouselView() {
+        const cards = this.getThemeCards();
+        if (cards.length === 0) return;
 
-initManageThemes() {
-    const manageLink = document.getElementById('manage-themes-link');
-    const carousel = document.querySelector('.cards-carousel');
-    const dock = document.querySelector('.floating-dock');
-
-    if (manageLink) {
-        manageLink.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            // Helper to deactivate other modes if any
-            const newCard = document.getElementById('new-card');
-            if (newCard) newCard.classList.remove('active');
-
-            // Enable Manage Mode
-            if (carousel) {
-                carousel.classList.add('manage-mode');
-                carousel.scrollLeft = 0;
-            }
-
-            // Hide Dock
-            if (dock) {
-                dock.classList.add('hidden');
-            }
+        // Reset all classes
+        cards.forEach(card => {
+            card.classList.remove('active', 'prev', 'next');
+            // Ensure visibility for active/prev/next is handled by CSS (others are hidden?)
+            // If css default is opacity: 0, then removing classes hides them. Good.
         });
+
+        // Set Active
+        cards[this.currentCardIndex].classList.add('active');
+
+        // Set Prev (Loop)
+        const prevIndex = (this.currentCardIndex - 1 + cards.length) % cards.length;
+        if (cards.length > 1) {
+            cards[prevIndex].classList.add('prev');
+        }
+
+        // Set Next (Loop)
+        const nextIndex = (this.currentCardIndex + 1) % cards.length;
+        if (cards.length > 2) {
+            // Only if we have at least 3 cards do we show Next distinct from prev
+            cards[nextIndex].classList.add('next');
+        } else if (cards.length === 2) {
+            // With 2 cards, one is Active, one is Prev. 
+            // Swipe Left (Next) -> Active becomes Prev, Prev becomes Active.
+            // Logic holds. Visually we only show Prev.
+        }
     }
 
-    // Listeners to Exit Manage Mode
-    // 1. Create Theme Link
-    const createLink = document.getElementById('create-theme-link');
-    if (createLink) {
-        createLink.addEventListener('click', (e) => {
-            if (carousel) carousel.classList.remove('manage-mode');
-            if (dock) dock.classList.remove('hidden');
-        });
+    getThemeCards() {
+        const allCards = Array.from(document.querySelectorAll('.dna-card'));
+        return allCards.filter(c => c.id !== 'new-card');
     }
 
-    // 2. Main Theme Nav Link (Return to Carousel)
-    const themeNavLink = document.querySelector('.nav-link[data-menu="theme"]');
-    if (themeNavLink) {
-        themeNavLink.addEventListener('click', (e) => {
-            // Exit Manage Mode
-            if (carousel && carousel.classList.contains('manage-mode')) {
-                carousel.classList.remove('manage-mode');
+    initManageThemes() {
+        const manageLink = document.getElementById('manage-themes-link');
+        const carousel = document.querySelector('.cards-carousel');
+        const dock = document.querySelector('.floating-dock');
+
+        if (manageLink) {
+            manageLink.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Helper to deactivate other modes if any
+                const newCard = document.getElementById('new-card');
+                if (newCard) newCard.classList.remove('active');
+
+                // Enable Manage Mode
+                if (carousel) {
+                    carousel.classList.add('manage-mode');
+                    carousel.scrollLeft = 0;
+                }
+
+                // Hide Dock
+                if (dock) {
+                    dock.classList.add('hidden');
+                }
+            });
+        }
+
+        // Listeners to Exit Manage Mode
+        // 1. Create Theme Link
+        const createLink = document.getElementById('create-theme-link');
+        if (createLink) {
+            createLink.addEventListener('click', (e) => {
+                if (carousel) carousel.classList.remove('manage-mode');
                 if (dock) dock.classList.remove('hidden');
-            }
-        });
-    }
+            });
+        }
 
-    // 3. Edit/Delete Button Delegation
-    if (carousel) {
-        carousel.addEventListener('click', (e) => {
-            // Only active in manage mode
-            if (!carousel.classList.contains('manage-mode')) return;
+        // 2. Main Theme Nav Link (Return to Carousel)
+        const themeNavLink = document.querySelector('.nav-link[data-menu="theme"]');
+        if (themeNavLink) {
+            themeNavLink.addEventListener('click', (e) => {
+                // Exit Manage Mode
+                if (carousel && carousel.classList.contains('manage-mode')) {
+                    carousel.classList.remove('manage-mode');
+                    if (dock) dock.classList.remove('hidden');
+                }
+            });
+        }
 
-            const editBtn = e.target.closest('.edit-btn');
-            if (editBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const card = editBtn.closest('.dna-card');
-                if (card) this.startEditing(card);
-            }
+        // 3. Edit/Delete Button Delegation
+        if (carousel) {
+            carousel.addEventListener('click', (e) => {
+                // Only active in manage mode
+                if (!carousel.classList.contains('manage-mode')) return;
 
-            const deleteBtn = e.target.closest('.delete-btn');
-            if (deleteBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const card = deleteBtn.closest('.dna-card');
-                if (card) {
-                    if (confirm('Supprimer ce thème définitivement ?')) {
-                        this.deleteTheme(card);
+                const editBtn = e.target.closest('.edit-btn');
+                if (editBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const card = editBtn.closest('.dna-card');
+                    if (card) this.startEditing(card);
+                }
+
+                const deleteBtn = e.target.closest('.delete-btn');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const card = deleteBtn.closest('.dna-card');
+                    if (card) {
+                        if (confirm('Supprimer ce thème définitivement ?')) {
+                            this.deleteTheme(card);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
-}
 
-createColorSidebarHTML() {
-    return `
+    createColorSidebarHTML() {
+        return `
             <div class="color-options-sidebar edit-mode-sidebar" style="position: absolute; right: -80px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px;">
                 <button class="color-circle" style="--circle-color: #B22222;" title="Crimson Red"></button>
                 <button class="color-circle" style="--circle-color: #50C878;" title="Émeraude"></button>
@@ -908,558 +913,558 @@ createColorSidebarHTML() {
                 <button class="color-circle" style="--circle-color: #353839;" title="Noir"></button>
             </div>
         `;
-}
-
-startEditing(card) {
-    if (this.isEditing) return;
-    this.isEditing = true;
-    this.editingCard = card;
-
-    // Store Original State
-    this.originalColorRgb = card.style.getPropertyValue('--theme-rgb');
-    // Determine original Hex
-    if (card.id === 'main-card') this.originalColorHex = '#7b61ff';
-    else {
-        const t = this.themes && this.themes.find(x => x.id === card.id);
-        this.originalColorHex = t ? t.color : '#7b61ff';
     }
 
-    // 1. Dim Others
-    const allCards = this.getThemeCards();
-    allCards.forEach(c => {
-        if (c !== card) c.classList.add('dimmed');
-    });
-    card.classList.add('editing');
+    startEditing(card) {
+        if (this.isEditing) return;
+        this.isEditing = true;
+        this.editingCard = card;
 
-    // 2. Inject Sidebar
-    const sidebarHtml = this.createColorSidebarHTML();
-    const sidebarWrapper = document.createElement('div');
-    sidebarWrapper.innerHTML = sidebarHtml;
-    const sidebar = sidebarWrapper.firstElementChild;
-    card.appendChild(sidebar);
+        // Store Original State
+        this.originalColorRgb = card.style.getPropertyValue('--theme-rgb');
+        // Determine original Hex
+        if (card.id === 'main-card') this.originalColorHex = '#7b61ff';
+        else {
+            const t = this.themes && this.themes.find(x => x.id === card.id);
+            this.originalColorHex = t ? t.color : '#7b61ff';
+        }
 
-    // Inject Close Button
-    const closeBtn = document.createElement('div');
-    closeBtn.className = 'edit-close-btn';
-    closeBtn.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    Object.assign(closeBtn.style, {
-        position: 'absolute', top: '20px', left: '20px', zIndex: '150', cursor: 'pointer', color: 'rgba(255,255,255,0.7)'
-    });
-    closeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.cancelEditing();
-    });
-    card.appendChild(closeBtn);
-
-    // 3. Attach Color Listeners
-    const circles = sidebar.querySelectorAll('.color-circle');
-    circles.forEach(circle => {
-        circle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            circles.forEach(c => c.classList.remove('selected'));
-            circle.classList.add('selected');
-
-            const rawColor = circle.style.getPropertyValue('--circle-color');
-            const colorStr = rawColor ? rawColor.trim() : '#7b61ff';
-            const rgb = this.parseColorToRgb(colorStr);
-            const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
-
-            card.style.setProperty('--theme-rgb', rgbString);
-
-            // Update Helix Color
-            let targetHelix = null;
-            if (card.id === 'main-card') {
-                targetHelix = this.dnaHelix;
-            } else if (this.themes) {
-                const themeObj = this.themes.find(t => t.id === card.id);
-                if (themeObj) targetHelix = themeObj.helix;
-            }
-
-            if (targetHelix) {
-                if (typeof targetHelix.setTheme === 'function') {
-                    targetHelix.setTheme(colorStr);
-                } else if (typeof targetHelix.updateAllColors === 'function') {
-                    targetHelix.updateAllColors(colorStr);
-                }
-            }
+        // 1. Dim Others
+        const allCards = this.getThemeCards();
+        allCards.forEach(c => {
+            if (c !== card) c.classList.add('dimmed');
         });
-    });
+        card.classList.add('editing');
 
-    // 4. Title to Input
-    const titleSpan = card.querySelector('.theme-title');
-    if (titleSpan) {
-        this.tempTitleText = titleSpan.textContent;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'theme-title-input-edit';
-        input.value = this.tempTitleText;
-        input.maxLength = 8;
-        titleSpan.replaceWith(input);
-        input.focus();
-        input.addEventListener('click', e => e.stopPropagation());
-    }
+        // 2. Inject Sidebar
+        const sidebarHtml = this.createColorSidebarHTML();
+        const sidebarWrapper = document.createElement('div');
+        sidebarWrapper.innerHTML = sidebarHtml;
+        const sidebar = sidebarWrapper.firstElementChild;
+        card.appendChild(sidebar);
 
-    // 5. Validation Button
-    const dock = document.querySelector('.floating-dock');
-    const addBtn = document.getElementById('add-note-btn');
-    if (dock) dock.classList.remove('hidden');
-    if (addBtn) {
-        addBtn.classList.add('valid-theme');
-        addBtn.innerHTML = `
+        // Inject Close Button
+        const closeBtn = document.createElement('div');
+        closeBtn.className = 'edit-close-btn';
+        closeBtn.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        Object.assign(closeBtn.style, {
+            position: 'absolute', top: '20px', left: '20px', zIndex: '150', cursor: 'pointer', color: 'rgba(255,255,255,0.7)'
+        });
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.cancelEditing();
+        });
+        card.appendChild(closeBtn);
+
+        // 3. Attach Color Listeners
+        const circles = sidebar.querySelectorAll('.color-circle');
+        circles.forEach(circle => {
+            circle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                circles.forEach(c => c.classList.remove('selected'));
+                circle.classList.add('selected');
+
+                const rawColor = circle.style.getPropertyValue('--circle-color');
+                const colorStr = rawColor ? rawColor.trim() : '#7b61ff';
+                const rgb = this.parseColorToRgb(colorStr);
+                const rgbString = `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+
+                card.style.setProperty('--theme-rgb', rgbString);
+
+                // Update Helix Color
+                let targetHelix = null;
+                if (card.id === 'main-card') {
+                    targetHelix = this.dnaHelix;
+                } else if (this.themes) {
+                    const themeObj = this.themes.find(t => t.id === card.id);
+                    if (themeObj) targetHelix = themeObj.helix;
+                }
+
+                if (targetHelix) {
+                    if (typeof targetHelix.setTheme === 'function') {
+                        targetHelix.setTheme(colorStr);
+                    } else if (typeof targetHelix.updateAllColors === 'function') {
+                        targetHelix.updateAllColors(colorStr);
+                    }
+                }
+            });
+        });
+
+        // 4. Title to Input
+        const titleSpan = card.querySelector('.theme-title');
+        if (titleSpan) {
+            this.tempTitleText = titleSpan.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'theme-title-input-edit';
+            input.value = this.tempTitleText;
+            input.maxLength = 8;
+            titleSpan.replaceWith(input);
+            input.focus();
+            input.addEventListener('click', e => e.stopPropagation());
+        }
+
+        // 5. Validation Button
+        const dock = document.querySelector('.floating-dock');
+        const addBtn = document.getElementById('add-note-btn');
+        if (dock) dock.classList.remove('hidden');
+        if (addBtn) {
+            addBtn.classList.add('valid-theme');
+            addBtn.innerHTML = `
                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                    <polyline points="20 6 9 17 4 12"></polyline>
                </svg>
            `;
-    }
-}
-
-cancelEditing() {
-    if (!this.editingCard) return;
-    const card = this.editingCard;
-
-    // Revert Title
-    const input = card.querySelector('.theme-title-input-edit');
-    if (input && this.tempTitleText) {
-        const span = document.createElement('span');
-        span.className = 'theme-title';
-        span.textContent = this.tempTitleText;
-        input.replaceWith(span);
-    }
-
-    // Revert Color
-    if (this.originalColorRgb) {
-        card.style.setProperty('--theme-rgb', this.originalColorRgb);
-
-        let targetHelix = null;
-        if (card.id === 'main-card') targetHelix = this.dnaHelix;
-        else if (this.themes) {
-            const themeObj = this.themes.find(t => t.id === card.id);
-            if (themeObj) targetHelix = themeObj.helix;
-        }
-        if (targetHelix && this.originalColorHex && typeof targetHelix.setTheme === 'function') {
-            targetHelix.setTheme(this.originalColorHex);
         }
     }
 
-    // Cleanup UI
-    const sidebar = card.querySelector('.edit-mode-sidebar');
-    if (sidebar) sidebar.remove();
-    const closeBtn = card.querySelector('.edit-close-btn');
-    if (closeBtn) closeBtn.remove();
+    cancelEditing() {
+        if (!this.editingCard) return;
+        const card = this.editingCard;
 
-    card.classList.remove('editing');
-    const allCards = this.getThemeCards();
-    allCards.forEach(c => c.classList.remove('dimmed'));
+        // Revert Title
+        const input = card.querySelector('.theme-title-input-edit');
+        if (input && this.tempTitleText) {
+            const span = document.createElement('span');
+            span.className = 'theme-title';
+            span.textContent = this.tempTitleText;
+            input.replaceWith(span);
+        }
 
-    this.isEditing = false;
-    this.editingCard = null;
+        // Revert Color
+        if (this.originalColorRgb) {
+            card.style.setProperty('--theme-rgb', this.originalColorRgb);
 
-    // Hide Dock
-    const dock = document.querySelector('.floating-dock');
-    const addBtn = document.getElementById('add-note-btn');
-    if (addBtn) {
-        addBtn.classList.remove('valid-theme');
-        addBtn.innerHTML = '<span class="button-icon">+</span>';
-        addBtn.style = '';
+            let targetHelix = null;
+            if (card.id === 'main-card') targetHelix = this.dnaHelix;
+            else if (this.themes) {
+                const themeObj = this.themes.find(t => t.id === card.id);
+                if (themeObj) targetHelix = themeObj.helix;
+            }
+            if (targetHelix && this.originalColorHex && typeof targetHelix.setTheme === 'function') {
+                targetHelix.setTheme(this.originalColorHex);
+            }
+        }
+
+        // Cleanup UI
+        const sidebar = card.querySelector('.edit-mode-sidebar');
+        if (sidebar) sidebar.remove();
+        const closeBtn = card.querySelector('.edit-close-btn');
+        if (closeBtn) closeBtn.remove();
+
+        card.classList.remove('editing');
+        const allCards = this.getThemeCards();
+        allCards.forEach(c => c.classList.remove('dimmed'));
+
+        this.isEditing = false;
+        this.editingCard = null;
+
+        // Hide Dock
+        const dock = document.querySelector('.floating-dock');
+        const addBtn = document.getElementById('add-note-btn');
+        if (addBtn) {
+            addBtn.classList.remove('valid-theme');
+            addBtn.innerHTML = '<span class="button-icon">+</span>';
+            addBtn.style = '';
+        }
+        if (dock) dock.classList.add('hidden');
     }
-    if (dock) dock.classList.add('hidden');
-}
 
     async saveEditing() {
-    if (!this.editingCard) return;
+        if (!this.editingCard) return;
 
-    const card = this.editingCard;
-    const themeId = card.id;
+        const card = this.editingCard;
+        const themeId = card.id;
 
-    // 1. Get New Data
-    const input = card.querySelector('.theme-title-input-edit');
-    const newTitle = input ? input.value : (this.tempTitleText || '');
+        // 1. Get New Data
+        const input = card.querySelector('.theme-title-input-edit');
+        const newTitle = input ? input.value : (this.tempTitleText || '');
 
-    let newColor = this.originalColorHex;
-    const sidebar = card.querySelector('.edit-mode-sidebar');
-    if (sidebar) {
-        const selectedCircle = sidebar.querySelector('.color-circle.selected');
-        if (selectedCircle) {
-            const raw = selectedCircle.style.getPropertyValue('--circle-color');
-            if (raw) newColor = raw.trim();
-        }
-    }
-
-    // 2. Restore UI
-    const span = document.createElement('span');
-    span.className = 'theme-title';
-    span.textContent = newTitle;
-    if (input) input.replaceWith(span);
-
-    if (sidebar) sidebar.remove();
-    const closeBtn = card.querySelector('.edit-close-btn');
-    if (closeBtn) closeBtn.remove();
-
-    card.classList.remove('editing');
-    const allCards = this.getThemeCards();
-    allCards.forEach(c => c.classList.remove('dimmed'));
-
-    // 3. Update State & DB
-    if (themeId !== 'main-card') {
-        // Update Local
-        const themeObj = this.themes.find(t => t.id === themeId);
-        if (themeObj) {
-            themeObj.name = newTitle;
-            themeObj.color = newColor;
+        let newColor = this.originalColorHex;
+        const sidebar = card.querySelector('.edit-mode-sidebar');
+        if (sidebar) {
+            const selectedCircle = sidebar.querySelector('.color-circle.selected');
+            if (selectedCircle) {
+                const raw = selectedCircle.style.getPropertyValue('--circle-color');
+                if (raw) newColor = raw.trim();
+            }
         }
 
-        // Update DB
-        try {
-            await supabase.from('themes').update({ name: newTitle, color: newColor }).eq('id', themeId);
-            this.showToast("Thème modifié !");
-        } catch (e) {
-            console.error(e);
-            this.showToast("Erreur sauvegarde.");
+        // 2. Restore UI
+        const span = document.createElement('span');
+        span.className = 'theme-title';
+        span.textContent = newTitle;
+        if (input) input.replaceWith(span);
+
+        if (sidebar) sidebar.remove();
+        const closeBtn = card.querySelector('.edit-close-btn');
+        if (closeBtn) closeBtn.remove();
+
+        card.classList.remove('editing');
+        const allCards = this.getThemeCards();
+        allCards.forEach(c => c.classList.remove('dimmed'));
+
+        // 3. Update State & DB
+        if (themeId !== 'main-card') {
+            // Update Local
+            const themeObj = this.themes.find(t => t.id === themeId);
+            if (themeObj) {
+                themeObj.name = newTitle;
+                themeObj.color = newColor;
+            }
+
+            // Update DB
+            try {
+                await supabase.from('themes').update({ name: newTitle, color: newColor }).eq('id', themeId);
+                this.showToast("Thème modifié !");
+            } catch (e) {
+                console.error(e);
+                this.showToast("Erreur sauvegarde.");
+            }
         }
-    }
 
-    // Reset State
-    this.isEditing = false;
-    this.editingCard = null;
+        // Reset State
+        this.isEditing = false;
+        this.editingCard = null;
 
-    // Reset Dock
-    const dock = document.querySelector('.floating-dock');
-    const addBtn = document.getElementById('add-note-btn');
-    if (addBtn) {
-        addBtn.classList.remove('valid-theme');
-        addBtn.innerHTML = '<span class="button-icon">+</span>';
+        // Reset Dock
+        const dock = document.querySelector('.floating-dock');
+        const addBtn = document.getElementById('add-note-btn');
+        if (addBtn) {
+            addBtn.classList.remove('valid-theme');
+            addBtn.innerHTML = '<span class="button-icon">+</span>';
+        }
+        if (dock) dock.classList.add('hidden');
     }
-    if (dock) dock.classList.add('hidden');
-}
 
     async deleteTheme(card) {
-    const themeId = card.id;
+        const themeId = card.id;
 
-    try {
-        // Delete from Supabase
-        const { error } = await supabase
-            .from('themes')
-            .delete()
-            .eq('id', themeId);
+        try {
+            // Delete from Supabase
+            const { error } = await supabase
+                .from('themes')
+                .delete()
+                .eq('id', themeId);
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // Remove from internal array
-        this.themes = this.themes.filter(t => t.id !== themeId);
+            // Remove from internal array
+            this.themes = this.themes.filter(t => t.id !== themeId);
 
-        // Remove from DOM
-        card.remove();
+            // Remove from DOM
+            card.remove();
 
-        // Adjust Index if needed
-        if (this.currentCardIndex >= this.themes.length) {
-            this.currentCardIndex = Math.max(0, this.themes.length - 1);
+            // Adjust Index if needed
+            if (this.currentCardIndex >= this.themes.length) {
+                this.currentCardIndex = Math.max(0, this.themes.length - 1);
+            }
+
+            this.updateCarouselView();
+            this.showToast('Thème supprimé');
+
+        } catch (err) {
+            console.error('Erreur suppression:', err);
+            this.showToast('Erreur lors de la suppression');
         }
-
-        this.updateCarouselView();
-        this.showToast('Thème supprimé');
-
-    } catch (err) {
-        console.error('Erreur suppression:', err);
-        this.showToast('Erreur lors de la suppression');
     }
-}
 
     async saveNote() {
-    const titleInput = document.querySelector('.note-title-input');
-    const contentArea = document.querySelector('.note-content-area');
+        const titleInput = document.querySelector('.note-title-input');
+        const contentArea = document.querySelector('.note-content-area');
 
-    const title = titleInput ? titleInput.value : '';
-    const content = contentArea ? contentArea.value : '';
-    const theme = this.selectedNoteTheme;
-    const date = this.noteDate || new Date();
+        const title = titleInput ? titleInput.value : '';
+        const content = contentArea ? contentArea.value : '';
+        const theme = this.selectedNoteTheme;
+        const date = this.noteDate || new Date();
 
-    if (!title && !content) {
-        this.showToast("La note est vide.");
-        return;
-    }
-
-    try {
-        let attachmentUrl = null;
-        let attachmentName = null;
-
-        // Upload File if selected
-        if (this.selectedFile) {
-            const fileExt = this.selectedFile.name.split('.').pop();
-            const fileName = `${Math.random()}.` + fileExt;
-            const filePath = `${this.user.id}/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('note_attachments')
-                .upload(filePath, this.selectedFile);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('note_attachments')
-                .getPublicUrl(filePath);
-
-            attachmentUrl = publicUrl;
-            attachmentName = this.selectedFile.name;
+        if (!title && !content) {
+            this.showToast("La note est vide.");
+            return;
         }
 
-        const { error } = await supabase.from('notes').insert([
-            {
-                title,
-                content,
-                theme_id: theme ? theme.id : null,
-                date_display: date.toISOString(),
-                user_id: this.user.id,
-                attachment_url: attachmentUrl,
-                attachment_name: attachmentName
+        try {
+            let attachmentUrl = null;
+            let attachmentName = null;
+
+            // Upload File if selected
+            if (this.selectedFile) {
+                const fileExt = this.selectedFile.name.split('.').pop();
+                const fileName = `${Math.random()}.` + fileExt;
+                const filePath = `${this.user.id}/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('note_attachments')
+                    .upload(filePath, this.selectedFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('note_attachments')
+                    .getPublicUrl(filePath);
+
+                attachmentUrl = publicUrl;
+                attachmentName = this.selectedFile.name;
             }
-        ]);
 
-        if (error) throw error;
+            const { error } = await supabase.from('notes').insert([
+                {
+                    title,
+                    content,
+                    theme_id: theme ? theme.id : null,
+                    date_display: date.toISOString(),
+                    user_id: this.user.id,
+                    attachment_url: attachmentUrl,
+                    attachment_name: attachmentName
+                }
+            ]);
 
-        this.showToast("Note enregistrée !");
-        this.toggleNoteCreationMode();
+            if (error) throw error;
 
-        // Reset UI
-        if (titleInput) titleInput.value = '';
-        if (contentArea) contentArea.value = '';
-        this.selectedNoteTheme = null;
+            this.showToast("Note enregistrée !");
+            this.toggleNoteCreationMode();
 
-        const capsule = document.getElementById('theme-capsule');
-        if (capsule) {
-            capsule.classList.remove('selected');
-            capsule.style.removeProperty('--selected-theme-color');
-            capsule.innerHTML = '<span class="capsule-icon">?</span>';
+            // Reset UI
+            if (titleInput) titleInput.value = '';
+            if (contentArea) contentArea.value = '';
+            this.selectedNoteTheme = null;
+
+            const capsule = document.getElementById('theme-capsule');
+            if (capsule) {
+                capsule.classList.remove('selected');
+                capsule.style.removeProperty('--selected-theme-color');
+                capsule.innerHTML = '<span class="capsule-icon">?</span>';
+            }
+
+        } catch (e) {
+            console.error(e);
+            this.showToast("Erreur sauvegarde note.");
+        }
+    }
+
+    /**
+     * API pour ajouter une note à un thème
+     * @param {string} themeId - ID du thème
+     * @param {string} themeColor - Couleur du thème
+     */
+    addNoteToTheme(themeId, themeColor) {
+        const filledCount = this.dnaHelix.getFilledCount();
+
+        if (filledCount < 20) {
+            this.dnaHelix.fillNucleotide(filledCount, themeColor, themeId);
+            this.showToast('Information encodée');
+            return true;
+        } else {
+            // Brin complet - logique de mutation à implémenter
+            this.showToast('Brin complet ! Mutation en cours...');
+            return false;
+        }
+    }
+
+    initThemeCreation() {
+        const createThemeTabs = Array.from(document.querySelectorAll('.submenu-link'));
+        const createThemeBtn = createThemeTabs.find(el => el.textContent.trim() === 'Créer un thème');
+
+        const newCard = document.getElementById('new-card');
+        const cancelBtn = document.querySelector('.cancel-create-btn');
+        const themeInput = document.querySelector('.theme-name-input');
+
+        if (createThemeBtn && newCard) {
+            createThemeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Hide all current cards
+                const allCards = this.getThemeCards();
+                allCards.forEach(card => {
+                    card.classList.remove('active');
+                    card.classList.add('prev');
+                });
+
+                // Show creation card
+                newCard.classList.add('active');
+
+                // Initialize Creation DNA if needed
+                requestAnimationFrame(() => {
+                    if (!this.creationHelix) {
+                        const canvas = document.getElementById('dna-canvas-creation');
+                        if (canvas) {
+                            this.creationHelix = new DNAHelix(canvas);
+                        }
+                    } else {
+                        this.creationHelix.setupCanvas();
+                    }
+
+                    // Trigger Default Color (First one)
+                    const circles = document.querySelectorAll('.color-options-sidebar .color-circle');
+                    if (circles.length > 0) {
+                        circles[0].click();
+                    }
+                });
+
+                setTimeout(() => {
+                    if (themeInput) themeInput.focus();
+                }, 400);
+            });
         }
 
-    } catch (e) {
-        console.error(e);
-        this.showToast("Erreur sauvegarde note.");
-    }
-}
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', (e) => {
+                e.preventDefault();
 
-/**
- * API pour ajouter une note à un thème
- * @param {string} themeId - ID du thème
- * @param {string} themeColor - Couleur du thème
- */
-addNoteToTheme(themeId, themeColor) {
-    const filledCount = this.dnaHelix.getFilledCount();
+                newCard.classList.remove('active');
 
-    if (filledCount < 20) {
-        this.dnaHelix.fillNucleotide(filledCount, themeColor, themeId);
-        this.showToast('Information encodée');
-        return true;
-    } else {
-        // Brin complet - logique de mutation à implémenter
-        this.showToast('Brin complet ! Mutation en cours...');
-        return false;
-    }
-}
+                // Restore carousel view
+                this.updateCarouselView();
 
-initThemeCreation() {
-    const createThemeTabs = Array.from(document.querySelectorAll('.submenu-link'));
-    const createThemeBtn = createThemeTabs.find(el => el.textContent.trim() === 'Créer un thème');
+                if (themeInput) themeInput.value = '';
 
-    const newCard = document.getElementById('new-card');
-    const cancelBtn = document.querySelector('.cancel-create-btn');
-    const themeInput = document.querySelector('.theme-name-input');
-
-    if (createThemeBtn && newCard) {
-        createThemeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            // Hide all current cards
-            const allCards = this.getThemeCards();
-            allCards.forEach(card => {
-                card.classList.remove('active');
-                card.classList.add('prev');
+                // Reset Selection
+                document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+                // Reset Button Visuals
+                this.updateValidationState();
             });
+        }
 
-            // Show creation card
-            newCard.classList.add('active');
+        // Listen for Input Validation
+        if (themeInput) {
+            themeInput.addEventListener('input', () => this.updateValidationState());
+            themeInput.addEventListener('keyup', () => this.updateValidationState());
+        }
 
-            // Initialize Creation DNA if needed
-            requestAnimationFrame(() => {
-                if (!this.creationHelix) {
-                    const canvas = document.getElementById('dna-canvas-creation');
-                    if (canvas) {
-                        this.creationHelix = new DNAHelix(canvas);
-                    }
-                } else {
-                    this.creationHelix.setupCanvas();
-                }
-
-                // Trigger Default Color (First one)
-                const circles = document.querySelectorAll('.color-options-sidebar .color-circle');
-                if (circles.length > 0) {
-                    circles[0].click();
-                }
-            });
-
-            setTimeout(() => {
-                if (themeInput) themeInput.focus();
-            }, 400);
-        });
+        // Initialize Color Selection Logic
+        this.initColorSelection();
     }
 
-    if (cancelBtn) {
-        cancelBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+    updateValidationState() {
+        const input = document.querySelector('.theme-name-input');
+        const selectedCircle = document.querySelector('.color-circle.selected');
+        const addBtn = document.getElementById('add-note-btn');
 
-            newCard.classList.remove('active');
+        // Ensure we are in creation mode
+        const newCard = document.getElementById('new-card');
+        const isActive = newCard && newCard.classList.contains('active');
 
-            // Restore carousel view
-            this.updateCarouselView();
+        if (!isActive && addBtn) {
+            // Reset to default style if not active
+            addBtn.classList.remove('valid-theme');
+            addBtn.innerHTML = '<span class="button-icon">+</span>';
+            addBtn.style.backgroundColor = '';
+            addBtn.style.boxShadow = '';
+            addBtn.style.borderColor = '';
+            return;
+        }
 
-            if (themeInput) themeInput.value = '';
+        if (input && addBtn) {
+            const hasText = input.value.trim().length > 0;
+            const isShortEnough = input.value.length <= 8;
+            const hasColor = !!selectedCircle;
 
-            // Reset Selection
-            document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
-            // Reset Button Visuals
-            this.updateValidationState();
-        });
-    }
-
-    // Listen for Input Validation
-    if (themeInput) {
-        themeInput.addEventListener('input', () => this.updateValidationState());
-        themeInput.addEventListener('keyup', () => this.updateValidationState());
-    }
-
-    // Initialize Color Selection Logic
-    this.initColorSelection();
-}
-
-updateValidationState() {
-    const input = document.querySelector('.theme-name-input');
-    const selectedCircle = document.querySelector('.color-circle.selected');
-    const addBtn = document.getElementById('add-note-btn');
-
-    // Ensure we are in creation mode
-    const newCard = document.getElementById('new-card');
-    const isActive = newCard && newCard.classList.contains('active');
-
-    if (!isActive && addBtn) {
-        // Reset to default style if not active
-        addBtn.classList.remove('valid-theme');
-        addBtn.innerHTML = '<span class="button-icon">+</span>';
-        addBtn.style.backgroundColor = '';
-        addBtn.style.boxShadow = '';
-        addBtn.style.borderColor = '';
-        return;
-    }
-
-    if (input && addBtn) {
-        const hasText = input.value.trim().length > 0;
-        const isShortEnough = input.value.length <= 8;
-        const hasColor = !!selectedCircle;
-
-        if (hasText && isShortEnough && hasColor) {
-            // Valid!
-            addBtn.classList.add('valid-theme');
-            addBtn.innerHTML = `
+            if (hasText && isShortEnough && hasColor) {
+                // Valid!
+                addBtn.classList.add('valid-theme');
+                addBtn.innerHTML = `
                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                        <polyline points="20 6 9 17 4 12"></polyline>
                    </svg>
                `;
 
-            // Use selected color
-            let colorVar = selectedCircle ? selectedCircle.style.getPropertyValue('--circle-color') : '#7b61ff';
+                // Use selected color
+                let colorVar = selectedCircle ? selectedCircle.style.getPropertyValue('--circle-color') : '#7b61ff';
 
-            addBtn.style.backgroundColor = colorVar;
-            addBtn.style.borderColor = colorVar;
-            addBtn.style.boxShadow = `0 0 20px ${colorVar}`;
-        } else {
-            // Invalid/Incomplete
-            addBtn.classList.remove('valid-theme');
-            addBtn.innerHTML = '<span class="button-icon">+</span>';
-            addBtn.style.backgroundColor = '';
-            addBtn.style.borderColor = '';
-            addBtn.style.boxShadow = '';
+                addBtn.style.backgroundColor = colorVar;
+                addBtn.style.borderColor = colorVar;
+                addBtn.style.boxShadow = `0 0 20px ${colorVar}`;
+            } else {
+                // Invalid/Incomplete
+                addBtn.classList.remove('valid-theme');
+                addBtn.innerHTML = '<span class="button-icon">+</span>';
+                addBtn.style.backgroundColor = '';
+                addBtn.style.borderColor = '';
+                addBtn.style.boxShadow = '';
+            }
         }
     }
-}
 
-initColorSelection() {
-    const newCard = document.getElementById('new-card');
-    if (!newCard) return;
+    initColorSelection() {
+        const newCard = document.getElementById('new-card');
+        if (!newCard) return;
 
-    // Colors are now in the external sidebar
-    const circles = document.querySelectorAll('.color-options-sidebar .color-circle');
-    const cardGlass = newCard.querySelector('.card-glass-layer');
-    const cardGradient = newCard.querySelector('.card-gradient');
+        // Colors are now in the external sidebar
+        const circles = document.querySelectorAll('.color-options-sidebar .color-circle');
+        const cardGlass = newCard.querySelector('.card-glass-layer');
+        const cardGradient = newCard.querySelector('.card-gradient');
 
-    circles.forEach(circle => {
-        circle.addEventListener('click', (e) => {
-            // Feedback Visuel
-            circles.forEach(c => c.classList.remove('selected'));
-            circle.classList.add('selected');
+        circles.forEach(circle => {
+            circle.addEventListener('click', (e) => {
+                // Feedback Visuel
+                circles.forEach(c => c.classList.remove('selected'));
+                circle.classList.add('selected');
 
-            // Récupérer la couleur brute
-            const rawColor = circle.style.getPropertyValue('--circle-color');
-            if (!rawColor) return;
+                // Récupérer la couleur brute
+                const rawColor = circle.style.getPropertyValue('--circle-color');
+                if (!rawColor) return;
 
-            // Convertir en composantes RGB pour manipuler l'opacité
-            const rgb = this.parseColorToRgb(rawColor);
-            if (!rgb) return;
+                // Convertir en composantes RGB pour manipuler l'opacité
+                const rgb = this.parseColorToRgb(rawColor);
+                if (!rgb) return;
 
-            // Appliquer l'Aura Lumineuse (White -> Selected Color)
-            const glowColorHigh = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
-            const glowColorLow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
+                // Appliquer l'Aura Lumineuse (White -> Selected Color)
+                const glowColorHigh = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`;
+                const glowColorLow = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`;
 
-            if (cardGlass) {
-                cardGlass.style.boxShadow = `
+                if (cardGlass) {
+                    cardGlass.style.boxShadow = `
                         0 20px 50px rgba(0, 0, 0, 0.5),
                         0 0 80px ${glowColorHigh},
                         inset 0 0 20px ${glowColorLow}
                     `;
-                cardGlass.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
-            }
+                    cardGlass.style.borderColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
+                }
 
-            // Appliquer le Gradient (Similaire à l'initial mais coloré)
-            // Linear Gradient sur la carte elle-même (Vertical)
-            newCard.style.background = `linear-gradient(180deg, 
+                // Appliquer le Gradient (Similaire à l'initial mais coloré)
+                // Linear Gradient sur la carte elle-même (Vertical)
+                newCard.style.background = `linear-gradient(180deg, 
                     rgba(10, 14, 20, 0.6) 0%, 
                     rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 40%, 
                     rgba(255, 255, 255, 0.1) 70%, 
                     rgba(255, 255, 255, 0.05) 100%)`;
 
-            if (cardGradient) {
-                cardGradient.style.background = `
+                if (cardGradient) {
+                    cardGradient.style.background = `
                         radial-gradient(ellipse at 50% 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) 0%, transparent 70%)
                     `;
-            }
+                }
 
-            // Update Validation Trigger
-            this.updateValidationState();
+                // Update Validation Trigger
+                this.updateValidationState();
+            });
         });
-    });
-}
-
-/**
- * Convertit n'importe quelle string couleur (Hex, Var, Name) en RGB
- */
-parseColorToRgb(colorStr) {
-    // Utiliser le navigateur pour parser la couleur via un élément temporaire
-    const div = document.createElement('div');
-    div.style.color = colorStr;
-    div.style.display = 'none';
-    document.body.appendChild(div);
-
-    const computedColor = window.getComputedStyle(div).color;
-    document.body.removeChild(div);
-
-    // computedColor est toujours au format "rgb(r, g, b)"
-    const match = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (match) {
-        return {
-            r: parseInt(match[1]),
-            g: parseInt(match[2]),
-            b: parseInt(match[3])
-        };
     }
-    return { r: 255, g: 255, b: 255 }; // Fallback blanc
-}
+
+    /**
+     * Convertit n'importe quelle string couleur (Hex, Var, Name) en RGB
+     */
+    parseColorToRgb(colorStr) {
+        // Utiliser le navigateur pour parser la couleur via un élément temporaire
+        const div = document.createElement('div');
+        div.style.color = colorStr;
+        div.style.display = 'none';
+        document.body.appendChild(div);
+
+        const computedColor = window.getComputedStyle(div).color;
+        document.body.removeChild(div);
+
+        // computedColor est toujours au format "rgb(r, g, b)"
+        const match = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (match) {
+            return {
+                r: parseInt(match[1]),
+                g: parseInt(match[2]),
+                b: parseInt(match[3])
+            };
+        }
+        return { r: 255, g: 255, b: 255 }; // Fallback blanc
+    }
 }
 
 // Initialiser l'application
