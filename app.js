@@ -427,10 +427,6 @@ class CellApp {
     populateThemeDropdown(listElement) {
         listElement.innerHTML = '';
 
-        // Add "Main" theme
-        const mainItem = this.createThemeItem('main-card', 'Principal', '#7b61ff');
-        listElement.appendChild(mainItem);
-
         // Add created themes
         if (this.themes && this.themes.length > 0) {
             this.themes.forEach(theme => {
