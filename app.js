@@ -388,6 +388,9 @@ class CellApp {
                 capsule.style.setProperty('--selected-theme-color', theme.color);
                 capsule.innerHTML = ''; // Remove "?" icon
                 capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
+
+                // CRITICAL: Set this so saveNote knows which theme we are in
+                this.selectedNoteTheme = theme;
             }
         }
 
@@ -449,12 +452,15 @@ class CellApp {
                 capsule.style.pointerEvents = 'auto';
             }
 
+            // Reset State Variables
+            this.currentEditingNoteId = null;
+            this.selectedNoteTheme = null; // Clear selection
+
             // Hide Toggle
             if (toggleContainer) {
                 toggleContainer.classList.add('hidden');
                 toggleCheckbox.onchange = null;
             }
-            this.currentEditingNoteId = null;
 
             // Restore Carousel Visibility
             if (carousel) carousel.classList.remove('hidden-view');
