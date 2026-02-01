@@ -1728,6 +1728,8 @@ class CellApp {
             color: white;
             transition: transform 0.2s;
             cursor: pointer;
+            width: 100%; /* Force full width */
+            box-sizing: border-box; /* Include padding in width */
         `;
 
         el.onmouseover = () => el.style.transform = 'translateY(-2px)';
