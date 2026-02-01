@@ -496,7 +496,7 @@ body {
     -webkit-mask: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     mask: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     pointer-events: none;
-    z-index: 10;
+    z-index: 2;
     overflow: hidden;
 }
 
