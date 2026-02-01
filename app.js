@@ -851,9 +851,8 @@ class CellApp {
                     e.stopPropagation();
                     const card = deleteBtn.closest('.dna-card');
                     if (card && card.id !== 'main-card') {
-                        if (confirm('Supprimer ce thème ?')) {
-                            card.remove();
-                            this.updateCarouselView();
+                        if (confirm('Supprimer ce thème définitivement ?')) {
+                            this.deleteTheme(card);
                         }
                     }
                 }
@@ -1098,6 +1097,29 @@ class CellApp {
             addBtn.innerHTML = '<span class="button-icon">+</span>';
         }
         if (dock) dock.classList.add('hidden');
+    }
+
+    async deleteTheme(card) {
+        const themeId = card.id;
+
+        try {
+            // Delete from Supabase
+            const { error } = await supabase
+                .from('themes')
+                .delete()
+                .eq('id', themeId);
+
+            if (error) throw error;
+
+            // Remove from DOM
+            card.remove();
+            this.updateCarouselView();
+            this.showToast('Thème supprimé');
+
+        } catch (err) {
+            console.error('Erreur suppression:', err);
+            this.showToast('Erreur lors de la suppression');
+        }
     }
 
     async saveNote() {
