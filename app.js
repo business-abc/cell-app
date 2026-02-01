@@ -297,6 +297,88 @@ class CellApp {
         if (displayText) displayText.textContent = '';
     }
 
+    /**
+     * Open Note in Read-Only Mode
+     */
+    openNoteReadOnly(note) {
+        const sheet = document.getElementById('note-sheet');
+        const carousel = document.querySelector('.cards-carousel');
+        const themeView = document.getElementById('theme-view-container');
+
+        if (!sheet) return;
+
+        // Visuals
+        sheet.classList.add('active');
+        if (carousel) carousel.classList.add('hidden-view');
+        // Keep theme view visible in background? Or hide? 
+        // User asked "remonte", implying overlay. 
+        // So we keep theme view but overlay sheet.
+
+        // Populate Data
+        const titleInput = document.querySelector('.note-title-input');
+        const contentArea = document.querySelector('.note-content-area');
+
+        if (titleInput) {
+            titleInput.value = note.title;
+            titleInput.setAttribute('readonly', 'true');
+            titleInput.style.pointerEvents = 'none'; // Ensure no interaction
+        }
+
+        if (contentArea) {
+            contentArea.innerHTML = note.content; // Render HTML
+            contentArea.setAttribute('contenteditable', 'false');
+            contentArea.style.pointerEvents = 'none'; // Ensure no interaction
+        }
+
+        // Hide Toolbar & Validation Button
+        const formatToolbar = document.getElementById('format-toolbar');
+        const addBtn = document.getElementById('add-note-btn');
+        const attachBtn = document.getElementById('attach-file-btn');
+
+        if (formatToolbar) formatToolbar.style.display = 'none';
+        if (addBtn) addBtn.style.display = 'none';
+        if (attachBtn) attachBtn.style.display = 'none';
+
+        // Close logic
+        const closeArrow = document.getElementById('note-close-arrow');
+        // Override close behavior to cleanup read-only state
+        const originalClose = closeArrow ? closeArrow.onclick : null;
+
+        const cleanupReadOnly = () => {
+            sheet.classList.remove('active');
+
+            // Restore editable state
+            if (titleInput) {
+                titleInput.removeAttribute('readonly');
+                titleInput.style.pointerEvents = 'auto';
+                titleInput.value = '';
+            }
+            if (contentArea) {
+                contentArea.setAttribute('contenteditable', 'true');
+                contentArea.style.pointerEvents = 'auto';
+                contentArea.innerHTML = '';
+            }
+
+            // Restore buttons
+            if (formatToolbar) formatToolbar.style.removeProperty('display');
+            if (addBtn) addBtn.style.removeProperty('display');
+            if (attachBtn) attachBtn.style.removeProperty('display');
+
+            // Restore close handler
+            if (closeArrow) closeArrow.onclick = () => this.toggleNoteCreationMode();
+        };
+
+        if (closeArrow) {
+            closeArrow.onclick = cleanupReadOnly;
+        }
+
+        // Helper to close on escape or click outside? 
+        // Note sheet usually covers everything.
+    }
+
+    /**
+     * Open Note Creation (Editable)
+     */
     toggleNoteCreationMode() {
         const sheet = document.getElementById('note-sheet');
         const carousel = document.querySelector('.cards-carousel');
@@ -540,6 +622,9 @@ class CellApp {
         const nameSpan = document.createElement('span');
         nameSpan.className = 'theme-item-name';
         nameSpan.textContent = name;
+
+        // Handle click to view full note
+
 
         item.appendChild(colorCircle);
         item.appendChild(nameSpan);
@@ -1721,6 +1806,10 @@ class CellApp {
                             </svg>
                         </div>
                      `;
+
+                    el.addEventListener('click', () => {
+                        this.openNoteReadOnly(note);
+                    });
 
                     container.appendChild(el);
                 });
