@@ -1697,3 +1697,14 @@ body {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
 }
+
+/* === Fix Floating Dock Position === */
+.floating-dock {
+    position: fixed !important;
+    bottom: 40px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    right: auto !important;
+    margin: 0 !important;
+    z-index: 1000;
+}
