@@ -194,8 +194,8 @@ class CellApp {
         // Feature: Rich Text Formatting
         this.initFormattingToolbar();
 
-        // Feature: Theme Details View
-        this.initThemeDetailsView();
+        // Feature: Theme Details View (Split)
+        this.initThemeView();
     }
 
     initSidebarNav() {
@@ -1591,101 +1591,102 @@ class CellApp {
             }
         });
     }
-    /* === Theme Details View Logic === */
+    /* === Theme View (Split Layout) Logic === */
 
-    initThemeDetailsView() {
-        const backBtn = document.getElementById('back-to-dashboard-btn');
+    initThemeView() {
+        // Back Button
+        const backBtn = document.getElementById('back-from-theme-btn');
         if (backBtn) {
-            backBtn.addEventListener('click', () => this.closeThemeDetails());
+            backBtn.addEventListener('click', () => this.closeThemeView());
         }
     }
 
     async openThemeDetails(themeId) {
+        // Note: keeping method name same to match renderThemeCard call
         const theme = this.themes.find(t => t.id === themeId);
         if (!theme) return;
 
-        // 1. Visual Transition
-        const carousel = document.querySelector('.cards-carousel');
+        // 1. Hide Dashboard & Header
         const dashboardMain = document.querySelector('.dashboard-main');
-        const detailsView = document.getElementById('theme-details-view');
-        const titleEl = document.getElementById('theme-details-title');
+        const header = document.querySelector('.app-header');
+        const themeView = document.getElementById('theme-view-container');
 
-        if (dashboardMain) dashboardMain.classList.add('shrunk');
+        if (dashboardMain) dashboardMain.classList.add('hidden-view');
+        if (header) header.classList.add('hidden');
 
-        setTimeout(() => {
-            if (detailsView) {
-                detailsView.classList.remove('hidden');
-                // Trigger reflow
-                void detailsView.offsetWidth;
-                detailsView.classList.add('visible');
-            }
-        }, 300);
+        // 2. Show Theme View
+        if (themeView) {
+            themeView.classList.remove('hidden');
+            // Trigger reflow
+            void themeView.offsetWidth;
+            themeView.classList.add('visible');
+        }
 
-        // 2. Set Content
-        if (titleEl) titleEl.textContent = theme.name;
+        // 3. Init Vertical DNA
+        this.initVerticalDNA(theme.color);
 
-        // 3. Init Timeline DNA
-        this.initTimelineDNA(theme.color);
-
-        // 4. Load Notes
-        await this.fetchAndRenderNotes(themeId);
+        // 4. Fetch Notes
+        await this.renderThemeNotes(themeId);
     }
 
-    closeThemeDetails() {
+    closeThemeView() {
         const dashboardMain = document.querySelector('.dashboard-main');
-        const detailsView = document.getElementById('theme-details-view');
+        const header = document.querySelector('.app-header');
+        const themeView = document.getElementById('theme-view-container');
 
-        if (detailsView) {
-            detailsView.classList.remove('visible');
+        if (themeView) {
+            themeView.classList.remove('visible');
             setTimeout(() => {
-                detailsView.classList.add('hidden');
-                if (dashboardMain) dashboardMain.classList.remove('shrunk');
+                themeView.classList.add('hidden');
+
+                // Restore Dashboard
+                if (dashboardMain) dashboardMain.classList.remove('hidden-view');
+                if (header) header.classList.remove('hidden');
             }, 500);
         }
 
-        // Stop Timeline DNA to save resources
-        if (this.timelineHelix) {
-            this.timelineHelix.stopAnimation();
-            this.timelineHelix = null;
+        // Stop DNA
+        if (this.verticalHelix) {
+            this.verticalHelix.stopAnimation();
+            this.verticalHelix = null;
         }
     }
 
-    initTimelineDNA(color) {
-        const canvas = document.getElementById('dna-canvas-timeline');
+    initVerticalDNA(color) {
+        const canvas = document.getElementById('dna-canvas-vertical');
         if (!canvas) return;
 
-        // Configuration for a long, vertical strand
-        // We want a lot of nucleotides to scroll through
+        // Config for long vertical strand
         const config = {
-            nucleotideCount: 60, // Much longer
-            helixRadius: 50,     // Slightly smaller radius
-            verticalSpacing: 25, // More spacing
-            rotationSpeed: 0.005 // Slower rotation
+            nucleotideCount: 80, // Very long
+            helixRadius: 60,
+            verticalSpacing: 30,
+            rotationSpeed: 0.003 // Slow elegant rotation
         };
 
-        this.timelineHelix = new DNAHelix(canvas, config);
-        this.timelineHelix.setTheme(color);
+        this.verticalHelix = new DNAHelix(canvas, config);
+        this.verticalHelix.setTheme(color);
 
-        // Fill randomness for visual effect
-        for (let i = 0; i < 60; i++) {
-            if (Math.random() > 0.4) {
-                this.timelineHelix.fillNucleotide(i, color, 'timeline-fill');
+        // Fill some for visuals
+        for (let i = 0; i < 80; i++) {
+            if (Math.random() > 0.6) {
+                this.verticalHelix.fillNucleotide(i, color, 'fill');
             }
         }
     }
 
-    async fetchAndRenderNotes(themeId) {
-        const container = document.getElementById('notes-timeline-container');
+    async renderThemeNotes(themeId) {
+        const container = document.getElementById('theme-notes-area');
         if (!container) return;
 
-        container.innerHTML = '<div class="empty-state-message">Chargement...</div>';
+        container.innerHTML = '<div style="color:white;text-align:center;margin-top:50px;">Chargement...</div>';
 
         try {
             const { data, error } = await supabase
                 .from('notes')
                 .select('*')
                 .eq('theme_id', themeId)
-                .order('date_display', { ascending: false }); // Newest first
+                .order('date_display', { ascending: false });
 
             if (error) throw error;
 
@@ -1693,69 +1694,37 @@ class CellApp {
 
             if (data && data.length > 0) {
                 data.forEach(note => {
-                    const card = this.createNoteCard(note);
-                    container.appendChild(card);
+                    const el = document.createElement('div');
+                    el.className = 'note-preview-card';
+
+                    const date = new Date(note.date_display).toLocaleDateString('fr-FR', {
+                        day: 'numeric', month: 'long', year: 'numeric'
+                    });
+
+                    // Text preview
+                    let text = note.content || '';
+                    if (text.includes('<')) {
+                        const tmp = document.createElement('div');
+                        tmp.innerHTML = text;
+                        text = tmp.textContent || '';
+                    }
+
+                    el.innerHTML = `
+                        <div class="note-preview-date">${date}</div>
+                        <div class="note-preview-title">${note.title || 'Sans titre'}</div>
+                        <div class="note-preview-snippet">${text}</div>
+                     `;
+
+                    container.appendChild(el);
                 });
             } else {
-                container.innerHTML = '<div class="empty-state-message">Aucune note dans ce thème.</div>';
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;margin-top:50px;">Aucune note.</div>';
             }
 
-        } catch (e) {
-            console.error('Error loading notes:', e);
-            container.innerHTML = '<div class="empty-state-message">Erreur lors du chargement des notes.</div>';
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="color:rgba(255,255,255,0.5);text-align:center;margin-top:50px;">Erreur de chargement.</div>';
         }
-    }
-
-    createNoteCard(note) {
-        const el = document.createElement('div');
-        el.className = 'note-card-glass';
-        // Basic styling for now, ideally moved to CSS
-        el.style.cssText = `
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            color: white;
-            transition: transform 0.2s;
-            cursor: pointer;
-        `;
-
-        el.onmouseover = () => el.style.transform = 'translateY(-2px)';
-        el.onmouseout = () => el.style.transform = 'translateY(0)';
-
-        const date = new Date(note.date_display).toLocaleDateString('fr-FR', {
-            day: 'numeric', month: 'long', year: 'numeric'
-        });
-
-        // Safe HTML content (stripped for preview or full)
-        // Check if content is HTML
-        const isHtml = note.content && note.content.includes('<');
-        let previewContent = '';
-
-        if (isHtml) {
-            const temp = document.createElement('div');
-            temp.innerHTML = note.content;
-            previewContent = temp.textContent || temp.innerText || '';
-        } else {
-            previewContent = note.content || '';
-        }
-
-        if (previewContent.length > 200) previewContent = previewContent.substring(0, 200) + '...';
-
-        el.innerHTML = `
-            <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 8px;">${date}</div>
-            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${note.title || 'Sans titre'}</h3>
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.5;">${previewContent}</div>
-        `;
-
-        // Handle click to view full note (Future task: open editor/viewer)
-        el.addEventListener('click', () => {
-            // For now just log
-            console.log('Open note:', note.id);
-        });
-
-        return el;
     }
 }
 

@@ -176,29 +176,26 @@
         </div>
     </div>
 
-    <!-- Theme Details View (Timeline) -->
-    <div id="theme-details-view" class="theme-details-view hidden">
-        <!-- Sidebar with DNA Timeline -->
-        <div class="timeline-sidebar">
-            <div class="back-button-container">
-                <button id="back-to-dashboard-btn" class="back-btn">
+    <!-- Theme Details View (New Split Layout) -->
+    <div id="theme-view-container" class="theme-view-container hidden">
+        <!-- Left: DNA Sidebar -->
+        <div class="theme-sidebar-dna">
+            <div class="back-button-wrapper">
+                <button id="back-from-theme-btn" class="back-btn-simple">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
                     <span>Retour</span>
                 </button>
-                <h2 id="theme-details-title" class="theme-details-title">Nom du Thème</h2>
             </div>
-
-            <div class="dna-timeline-wrapper">
-                <canvas id="dna-canvas-timeline"></canvas>
+            <div class="vertical-dna-wrapper">
+                <canvas id="dna-canvas-vertical"></canvas>
             </div>
         </div>
 
-        <!-- Notes List Area -->
-        <div class="notes-timeline-container" id="notes-timeline-container">
+        <!-- Right: Notes Area -->
+        <div class="theme-notes-area" id="theme-notes-area">
             <!-- Notes will be injected here -->
-            <div class="empty-state-message">Aucune note dans ce thème pour le moment.</div>
         </div>
     </div>
 
