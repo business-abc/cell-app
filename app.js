@@ -147,6 +147,18 @@ class CellApp {
             saveBtn.addEventListener('click', () => this.saveNote());
         }
 
+        // Note Save Button (Inside Sheet) - Explicit Listener
+        const noteSaveBtn = document.querySelector('.note-action-btn.save-btn');
+        if (noteSaveBtn) {
+            // Remove existing listeners to prevent duplicates if any (tough without reference, but cloning works)
+            // Or just ensure we don't double bind if init called once.
+            // Assuming initEventListeners called once.
+            noteSaveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.saveNote();
+            });
+        }
+
         // Attach Button
         const attachBtn = document.getElementById('attach-file-btn');
         const fileInput = document.getElementById('note-file-input');
