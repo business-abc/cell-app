@@ -1702,10 +1702,11 @@ body {
 /* === Fix Floating Dock Position === */
 .floating-dock {
     position: fixed !important;
-    /* Aligned under the card (Center + 32.5vh + margin) */
-    top: calc(50% + 32.5vh + 25px) !important;
+    /* Below the card (center + half card height + gap) */
+    top: calc(50% + 32.5vh + 50px) !important;
     bottom: auto !important;
-    left: 50% !important;
+    /* Centered with the card (accounting for 80px sidebar: half = 40px offset) */
+    left: calc(50% + 40px) !important;
     transform: translateX(-50%) !important;
     right: auto !important;
     margin: 0 !important;
