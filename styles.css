@@ -1841,7 +1841,13 @@ body {
     display: inline-block;
 }
 
-/* === Formatting Toolbar Popup === */
+/* === Button Hover === */
+.view-note-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-1px);
+}
+
+/* === Date Picker Customization === */
 .format-toolbar {
     position: absolute;
     bottom: 120%;

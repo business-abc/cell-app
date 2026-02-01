@@ -1609,8 +1609,10 @@ class CellApp {
         const dashboardMain = document.querySelector('.dashboard-main');
         const detailsView = document.getElementById('theme-details-view');
         const titleEl = document.getElementById('theme-details-title');
+        const appHeader = document.querySelector('.app-header'); // Get header
 
         if (dashboardMain) dashboardMain.classList.add('shrunk');
+        if (appHeader) appHeader.style.opacity = '0'; // Hide Header
 
         setTimeout(() => {
             if (detailsView) {
@@ -1625,7 +1627,8 @@ class CellApp {
         if (titleEl) titleEl.textContent = theme.name;
 
         // 3. Init Timeline DNA
-        this.initTimelineDNA(theme.color);
+        // Ensure container has height before init
+        setTimeout(() => this.initTimelineDNA(theme.color), 350);
 
         // 4. Load Notes
         await this.fetchAndRenderNotes(themeId);
@@ -1634,12 +1637,14 @@ class CellApp {
     closeThemeDetails() {
         const dashboardMain = document.querySelector('.dashboard-main');
         const detailsView = document.getElementById('theme-details-view');
+        const appHeader = document.querySelector('.app-header');
 
         if (detailsView) {
             detailsView.classList.remove('visible');
             setTimeout(() => {
                 detailsView.classList.add('hidden');
                 if (dashboardMain) dashboardMain.classList.remove('shrunk');
+                if (appHeader) appHeader.style.opacity = '1'; // Show Header
             }, 500);
         }
 
@@ -1654,12 +1659,16 @@ class CellApp {
         const canvas = document.getElementById('dna-canvas-timeline');
         if (!canvas) return;
 
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+
         // Configuration for a long, vertical strand
         // We want a lot of nucleotides to scroll through
         const config = {
             nucleotideCount: 60, // Much longer
             helixRadius: 50,     // Slightly smaller radius
-            verticalSpacing: 25, // More spacing
+            verticalSpacing: 30, // More spacing
             rotationSpeed: 0.005 // Slower rotation
         };
 
@@ -1746,14 +1755,32 @@ class CellApp {
         el.innerHTML = `
             <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 8px;">${date}</div>
             <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${note.title || 'Sans titre'}</h3>
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.5;">${previewContent}</div>
+            <div style="font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.5; margin-bottom: 16px;">${previewContent}</div>
+            <div style="display: flex; justify-content: flex-end;">
+                 <button class="view-note-btn" style="
+                    background: rgba(255, 255, 255, 0.1); 
+                    border: 1px solid rgba(255, 255, 255, 0.2); 
+                    color: white; 
+                    padding: 8px 16px; 
+                    border-radius: 20px; 
+                    font-size: 12px; 
+                    cursor: pointer; 
+                    transition: all 0.2s;"
+                 >
+                    Voir la note
+                 </button>
+            </div>
         `;
 
-        // Handle click to view full note (Future task: open editor/viewer)
-        el.addEventListener('click', () => {
-            // For now just log
-            console.log('Open note:', note.id);
-        });
+        // Handle click to view full note
+        const btn = el.querySelector('.view-note-btn');
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                console.log('Open note:', note.id);
+                // Future: Implement full note view
+            });
+        }
 
         return el;
     }
