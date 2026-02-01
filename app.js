@@ -1541,13 +1541,47 @@ class CellApp {
             const themeName = theme ? theme.name : 'Sans catégorie';
             this.showToast(isUpdate ? "Note mise à jour !" : `Note enregistrée dans ${themeName}`, 'success');
 
-            // Close Sheet first for visual feedback
-            const closeArrow = document.getElementById('note-close-arrow');
-            if (closeArrow) closeArrow.click();
+            if (isUpdate) {
+                // If Updating: Stay on Note, Switch to Read-Only, Update UI
 
-            // Refresh view if we updated a note (list will show new data in background)
-            if (isUpdate && payload.theme_id) {
-                await this.renderThemeNotes(payload.theme_id);
+                // 1. Switch Toggle Off
+                const toggleCheckbox = document.getElementById('edit-mode-checkbox');
+                if (toggleCheckbox) {
+                    toggleCheckbox.checked = false;
+                    // Manually trigger change handler or call method directly
+                    this.setNoteEditable(false);
+                }
+
+                // 2. Update Attachment Pill if changed
+                const displayPill = document.getElementById('file-preview-pill');
+                const displayText = document.getElementById('file-name-text');
+                const removeBtn = document.getElementById('remove-file-btn');
+
+                if (attachmentUrl && displayPill && displayText) {
+                    displayPill.classList.remove('hidden');
+                    displayText.textContent = attachmentName || 'Pièce jointe';
+                    if (removeBtn) removeBtn.style.display = 'none';
+
+                    // Update click handler for read-only (remote url)
+                    displayPill.onclick = (e) => {
+                        if (e.target.closest('#remove-file-btn')) return;
+                        window.open(attachmentUrl, '_blank');
+                    };
+                } else if (!attachmentUrl && displayPill) {
+                    // If no attachment in payload, it might mean we didn't touch it or we removed it.
+                    // If we want to handle removal, we need to check if selectedFile was explicitly removed.
+                    // For now, if displayPill is hidden, keep it hidden.
+                }
+
+                // 3. Refresh List in Background
+                if (payload.theme_id) {
+                    this.renderThemeNotes(payload.theme_id);
+                }
+
+            } else {
+                // If Creating: Close Sheet and Return to List
+                const closeArrow = document.getElementById('note-close-arrow');
+                if (closeArrow) closeArrow.click(); // This closes and cleans up
             }
 
         } catch (e) {
