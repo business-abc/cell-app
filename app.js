@@ -1111,8 +1111,17 @@ class CellApp {
 
             if (error) throw error;
 
+            // Remove from internal array
+            this.themes = this.themes.filter(t => t.id !== themeId);
+
             // Remove from DOM
             card.remove();
+
+            // Adjust Index if needed
+            if (this.currentCardIndex >= this.themes.length) {
+                this.currentCardIndex = Math.max(0, this.themes.length - 1);
+            }
+
             this.updateCarouselView();
             this.showToast('Thème supprimé');
 
