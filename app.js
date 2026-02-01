@@ -371,12 +371,12 @@ class CellApp {
         }
 
         // Hide Toolbar & Validation Button
-        const formatToolbar = document.getElementById('format-toolbar');
-        const addBtn = document.getElementById('add-note-btn');
+        const formatBtn = document.getElementById('format-btn'); // The Aa button
+        const saveBtn = document.querySelector('.note-action-btn.save-btn'); // The Validate button
         const attachBtn = document.getElementById('attach-file-btn');
 
-        if (formatToolbar) formatToolbar.style.display = 'none';
-        if (addBtn) addBtn.style.display = 'none';
+        if (formatBtn) formatBtn.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'none';
         if (attachBtn) attachBtn.style.display = 'none';
 
         // Close logic
@@ -400,8 +400,8 @@ class CellApp {
             }
 
             // Restore buttons
-            if (formatToolbar) formatToolbar.style.removeProperty('display');
-            if (addBtn) addBtn.style.removeProperty('display');
+            if (formatBtn) formatBtn.style.removeProperty('display');
+            if (saveBtn) saveBtn.style.removeProperty('display');
             if (attachBtn) attachBtn.style.removeProperty('display');
 
             // Restore attachment state
