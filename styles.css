@@ -1347,7 +1347,7 @@ body {
 .note-body {
     flex: 1;
     width: 100%;
-    padding: 0 40px 80px 40px;
+    padding: 0 40px 180px 40px;
     /* Bottom padding for toolbar */
     overflow-y: auto;
 }
@@ -1378,7 +1378,7 @@ body {
 /* Footer Toolbar */
 .note-footer-toolbar {
     position: absolute;
-    bottom: 30px;
+    bottom: 120px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
