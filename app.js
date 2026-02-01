@@ -379,6 +379,18 @@ class CellApp {
         if (saveBtn) saveBtn.style.display = 'none';
         if (attachBtn) attachBtn.style.display = 'none';
 
+        // Sync Theme Capsule
+        const capsule = document.getElementById('theme-capsule');
+        if (capsule && note.theme_id && this.themes) {
+            const theme = this.themes.find(t => t.id === note.theme_id);
+            if (theme) {
+                capsule.classList.add('selected');
+                capsule.style.setProperty('--selected-theme-color', theme.color);
+                capsule.innerHTML = ''; // Remove "?" icon
+                capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
+            }
+        }
+
         // Close logic
         const closeArrow = document.getElementById('note-close-arrow');
         // Override close behavior to cleanup read-only state
@@ -410,6 +422,14 @@ class CellApp {
                 displayPill.onclick = null; // Clear handler
                 displayPill.style.cursor = '';
                 if (removeBtn) removeBtn.style.removeProperty('display');
+            }
+
+            // Restore Theme Capsule
+            if (capsule) {
+                capsule.classList.remove('selected');
+                capsule.style.removeProperty('--selected-theme-color');
+                capsule.innerHTML = '<span class="capsule-icon">?</span>';
+                capsule.style.pointerEvents = 'auto';
             }
 
             // Restore Carousel Visibility
