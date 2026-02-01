@@ -1712,3 +1712,21 @@ body {
     margin: 0 !important;
     z-index: 1000;
 }
+
+.file-name-display {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 12px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-right: 10px;
+}
+
+.file-name-display.hidden {
+    display: none;
+}
