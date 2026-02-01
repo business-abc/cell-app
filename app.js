@@ -279,6 +279,19 @@ class CellApp {
             if (displayPill && displayText) {
                 displayText.textContent = file.name;
                 displayPill.classList.remove('hidden');
+
+                // Allow preview if clicked (not on remove btn)
+                displayPill.onclick = (e) => {
+                    if (e.target.closest('#remove-file-btn')) return;
+
+                    // Create object URL for local preview
+                    const url = URL.createObjectURL(file);
+                    window.open(url, '_blank');
+
+                    // Cleanup URL after delay? No, browser handles it per page usually. 
+                    // Or revoke on cleanup. For now simple open is fine.
+                };
+                displayPill.style.cursor = 'pointer';
             }
             this.selectedFile = file;
         } else {
@@ -330,6 +343,33 @@ class CellApp {
             contentArea.style.pointerEvents = 'none'; // Ensure no interaction
         }
 
+        // Handle Attachment Logic
+        const displayPill = document.getElementById('file-preview-pill');
+        const displayText = document.getElementById('file-name-text');
+        const removeBtn = document.getElementById('remove-file-btn');
+
+        if (displayPill && displayText) {
+            if (note.attachment_url) {
+                displayPill.classList.remove('hidden');
+                displayText.textContent = note.attachment_name || 'Pièce jointe';
+                if (removeBtn) removeBtn.style.display = 'none'; // No remove in read-only
+
+                // View Attachment Handler
+                displayPill.onclick = (e) => {
+                    // Check if clicking remove button (though hidden)
+                    if (e.target.closest('#remove-file-btn')) return;
+
+                    // Open URL
+                    window.open(note.attachment_url, '_blank');
+                };
+                // Make it look clickable
+                displayPill.style.cursor = 'pointer';
+
+            } else {
+                displayPill.classList.add('hidden');
+            }
+        }
+
         // Hide Toolbar & Validation Button
         const formatToolbar = document.getElementById('format-toolbar');
         const addBtn = document.getElementById('add-note-btn');
@@ -363,6 +403,14 @@ class CellApp {
             if (formatToolbar) formatToolbar.style.removeProperty('display');
             if (addBtn) addBtn.style.removeProperty('display');
             if (attachBtn) attachBtn.style.removeProperty('display');
+
+            // Restore attachment state
+            if (displayPill) {
+                displayPill.classList.add('hidden');
+                displayPill.onclick = null; // Clear handler
+                displayPill.style.cursor = '';
+                if (removeBtn) removeBtn.style.removeProperty('display');
+            }
 
             // Restore close handler
             if (closeArrow) closeArrow.onclick = () => this.toggleNoteCreationMode();
