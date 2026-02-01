@@ -1703,7 +1703,7 @@ body {
 .floating-dock {
     position: fixed !important;
     /* Below the card (center + half card height + larger gap) */
-    top: calc(50% + 32.5vh + 100px) !important;
+    top: calc(50% + 32.5vh + 70px) !important;
     bottom: auto !important;
     /* Centered with the card (accounting for 80px sidebar: half = 40px offset) */
     left: calc(50% + 40px) !important;
