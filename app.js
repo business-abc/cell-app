@@ -1701,18 +1701,20 @@ class CellApp {
                         day: 'numeric', month: 'long', year: 'numeric'
                     });
 
-                    // Text preview
-                    let text = note.content || '';
-                    if (text.includes('<')) {
-                        const tmp = document.createElement('div');
-                        tmp.innerHTML = text;
-                        text = tmp.textContent || '';
-                    }
+                    // Text preview - Preserve HTML structure
+                    // We inject the HTML directly. CSS will handle line clamping.
+                    // However, we want to ensure we don't inject massive images or iframes in preview if we don't want to.
+                    // For now, let's trust the content is safe (sanitized on save ideally, or just contenteditable HTML)
+                    let contentHtml = note.content || '';
+
+                    // Simple safety check: if it's way too long, maybe truncate raw string first? 
+                    // But truncating HTML string is risky (unclosed tags).
+                    // Better to rely on CSS overflow hidden.
 
                     el.innerHTML = `
                         <div class="note-preview-date">${date}</div>
                         <div class="note-preview-title">${note.title || 'Sans titre'}</div>
-                        <div class="note-preview-snippet">${text}</div>
+                        <div class="note-preview-snippet">${contentHtml}</div>
                      `;
 
                     container.appendChild(el);

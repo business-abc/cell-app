@@ -2022,6 +2022,14 @@ body {
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    word-break: break-word;
+}
+
+.note-preview-snippet b,
+.note-preview-snippet strong {
+    color: white;
+    /* Make bold text pop */
+    font-weight: 700;
 }
 
 /* Scrollbar */
