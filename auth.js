@@ -9,6 +9,8 @@ class AuthManager {
         this.form = document.getElementById('auth-form');
         this.emailInput = document.getElementById('email');
         this.passwordInput = document.getElementById('password');
+        this.nameInput = document.getElementById('name');
+        this.nameGroup = document.querySelector('.name-group');
         this.submitBtn = document.getElementById('submit-btn');
         this.btnText = document.getElementById('btn-text');
         this.loader = document.querySelector('.loader');
@@ -56,8 +58,10 @@ class AuthManager {
         this.errorBanner.classList.add('hidden');
         if (mode === 'login') {
             this.btnText.textContent = 'Se connecter';
+            if (this.nameGroup) this.nameGroup.classList.add('hidden');
         } else {
             this.btnText.textContent = "S'inscrire";
+            if (this.nameGroup) this.nameGroup.classList.remove('hidden');
         }
     }
 
@@ -72,9 +76,15 @@ class AuthManager {
         try {
             let result;
             if (this.mode === 'signup') {
+                const displayName = this.nameInput ? this.nameInput.value.trim() : '';
                 result = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: {
+                            display_name: displayName || email.split('@')[0]
+                        }
+                    }
                 });
             } else {
                 result = await supabase.auth.signInWithPassword({

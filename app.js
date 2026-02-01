@@ -34,7 +34,20 @@ class CellApp {
         this.user = session.user;
     }
 
+    displayUserName() {
+        const nameEl = document.querySelector('.user-name');
+        if (!nameEl || !this.user) return;
+
+        // Try to get display_name from metadata, fallback to email prefix
+        const displayName = this.user.user_metadata?.display_name
+            || this.user.email?.split('@')[0]
+            || 'Utilisateur';
+
+        nameEl.textContent = displayName;
+    }
+
     setup() {
+        this.displayUserName();
         this.initDNAHelix();
         this.initParticles();
         this.initEventListeners();
