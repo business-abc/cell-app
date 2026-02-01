@@ -316,6 +316,7 @@ class CellApp {
 
             // Reset File Selection
             this.removeSelectedFile();
+            carousel.classList.remove('hidden-view'); // Restore carousel visibility
         } else {
             // Opening
             sheet.classList.add('active');
