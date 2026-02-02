@@ -17,6 +17,7 @@ class CellApp {
         this.dnaHelix = null;
         this.themes = [];
         this.selectedNoteTheme = null;    // Theme selected for current note
+        this.currentEditingNoteId = null; // ID of note being edited (null = new note)
 
         this.init();
     }
@@ -196,6 +197,21 @@ class CellApp {
                     window.location.href = '/auth.html';
                 }
             };
+        }
+
+        // Notes Menu Click
+        const notesLink = document.querySelector('.nav-link[data-menu="notes"]');
+        if (notesLink) {
+            notesLink.onclick = async (e) => {
+                e.preventDefault();
+                await this.openAllNotesView();
+            };
+        }
+
+        // Back from All Notes
+        const backFromNotesBtn = document.getElementById('back-from-notes-btn');
+        if (backFromNotesBtn) {
+            backFromNotesBtn.onclick = () => this.closeAllNotesView();
         }
 
         // Feature: Rich Text Formatting
@@ -409,8 +425,31 @@ class CellApp {
             capsule.classList.add('selected');
             capsule.style.setProperty('--selected-theme-color', this.selectedNoteTheme.color);
             capsule.innerHTML = ''; // Remove "?" icon
-            capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
+            capsule.style.pointerEvents = 'none'; // Read-only: can't change theme initially
         }
+
+        // Show Edit Toggle and setup handler
+        const toggleContainer = document.getElementById('edit-mode-toggle-container');
+        const toggleCheckbox = document.getElementById('edit-mode-checkbox');
+
+        if (toggleContainer) {
+            toggleContainer.classList.remove('hidden'); // Show toggle
+            toggleCheckbox.checked = false; // Start in read-only mode
+
+            toggleCheckbox.onchange = () => {
+                const isEditing = toggleCheckbox.checked;
+                this.setNoteEditable(isEditing);
+            };
+        }
+
+        // Store current note ID for updating
+        this.currentEditingNoteId = note.id;
+        console.log('openNoteReadOnly: Set currentEditingNoteId to', this.currentEditingNoteId);
+        console.log('Note Ownership Check:', {
+            currentUserId: this.user ? this.user.id : 'No User',
+            noteOwnerId: note.user_id,
+            isOwner: this.user && this.user.id === note.user_id
+        });
 
         // Close logic
         const closeArrow = document.getElementById('note-close-arrow');
@@ -453,27 +492,100 @@ class CellApp {
 
             // Reset State
             this.selectedNoteTheme = null;
+            this.currentEditingNoteId = null;
 
-            // Only restore Carousel if theme view is NOT active
+            // Hide Edit Toggle
+            if (toggleContainer) {
+                toggleContainer.classList.add('hidden');
+                toggleCheckbox.checked = false;
+                toggleCheckbox.onchange = null;
+            }
+
+            // Only restore Carousel if theme view is NOT active AND all-notes view is NOT active
             const themeView = document.getElementById('theme-view-container');
+            const allNotesView = document.getElementById('all-notes-view');
             const isInThemeView = themeView && themeView.classList.contains('active');
-            if (carousel && !isInThemeView) {
+            const isInAllNotesView = allNotesView && allNotesView.classList.contains('active');
+            if (carousel && !isInThemeView && !isInAllNotesView) {
                 carousel.classList.remove('hidden-view');
             }
 
             // Restore close handler
             if (closeArrow) closeArrow.onclick = () => this.toggleNoteCreationMode();
+
+            // Remove escape listener
+            if (this.escapeHandler) {
+                document.removeEventListener('keydown', this.escapeHandler);
+                this.escapeHandler = null;
+            }
         };
 
         if (closeArrow) {
             closeArrow.onclick = cleanupReadOnly;
         }
 
-        // Helper to close on escape or click outside? 
-        // Note sheet usually covers everything.
+        // Escape Key Listener for read-only mode
+        this.escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                cleanupReadOnly();
+            }
+        };
+        document.addEventListener('keydown', this.escapeHandler);
     }
 
-    // setNoteEditable removed - notes are now read-only
+    /**
+     * Toggle note between editable and read-only mode
+     */
+    setNoteEditable(isEditable) {
+        const titleInput = document.querySelector('.note-title-input');
+        const contentArea = document.querySelector('.note-content-area');
+        const formatBtn = document.getElementById('format-btn');
+        const saveBtn = document.querySelector('.note-action-btn.save-btn');
+        const attachBtn = document.getElementById('attach-file-btn');
+        const capsule = document.getElementById('theme-capsule');
+        const removeBtn = document.getElementById('remove-file-btn');
+
+        if (isEditable) {
+            // Enable Inputs
+            if (titleInput) {
+                titleInput.removeAttribute('readonly');
+                titleInput.style.pointerEvents = 'auto';
+            }
+            if (contentArea) {
+                contentArea.setAttribute('contenteditable', 'true');
+                contentArea.style.pointerEvents = 'auto';
+            }
+
+            // Show Tools
+            if (formatBtn) formatBtn.style.removeProperty('display');
+            if (saveBtn) saveBtn.style.removeProperty('display');
+            if (attachBtn) attachBtn.style.removeProperty('display');
+
+            // Allow Theme Change
+            if (capsule) capsule.style.pointerEvents = 'auto';
+
+            // Allow File Removal
+            if (removeBtn) removeBtn.style.removeProperty('display');
+
+        } else {
+            // Revert to Read-Only
+            if (titleInput) {
+                titleInput.setAttribute('readonly', 'true');
+                titleInput.style.pointerEvents = 'none';
+            }
+            if (contentArea) {
+                contentArea.setAttribute('contenteditable', 'false');
+                contentArea.style.pointerEvents = 'none';
+            }
+
+            if (formatBtn) formatBtn.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (attachBtn) attachBtn.style.display = 'none';
+
+            if (capsule) capsule.style.pointerEvents = 'none';
+            if (removeBtn) removeBtn.style.display = 'none';
+        }
+    }
 
     /**
      * Open Note Creation (Editable)
@@ -507,7 +619,8 @@ class CellApp {
             if (titleInput) titleInput.value = '';
             if (contentArea) contentArea.innerHTML = '';
 
-            // Reset Theme Selection
+            // Reset editing state
+            this.currentEditingNoteId = null;
             this.selectedNoteTheme = null;
             const capsule = document.getElementById('theme-capsule');
             if (capsule) {
@@ -1449,16 +1562,53 @@ class CellApp {
                 payload.attachment_name = attachmentName;
             }
 
-            // Only INSERT (no updates - notes are read-only after creation)
-            await noteService.create(payload);
+            // Determine if UPDATE or INSERT
+            const isUpdate = !!this.currentEditingNoteId;
+            console.log('saveNote: isUpdate?', isUpdate, 'ID:', this.currentEditingNoteId);
+
+            if (isUpdate) {
+                // UPDATE STRATEGY: Standard update with sanitized payload
+                // We strictly exclude user_id, id, created_at to avoid RLS/Trigger issues
+
+                const updatePayload = {
+                    title: payload.title,
+                    content: payload.content,
+                    theme_id: payload.theme_id,
+                    date_display: payload.date_display // We allow updating the display date if needed
+                };
+
+                if (payload.attachment_url) {
+                    updatePayload.attachment_url = payload.attachment_url;
+                    updatePayload.attachment_name = payload.attachment_name;
+                }
+
+                console.log('saveNote: calling update with sanitized payload:', updatePayload);
+                const result = await noteService.update(this.currentEditingNoteId, updatePayload);
+                console.log('saveNote: update result:', result);
+
+                if (result && result.length === 0) {
+                    console.warn('saveNote: UPDATE returned 0 rows! ID mismatch or RLS blocking.');
+                    Toast.error("Erreur: Impossible de modifier. Vérifiez que vous êtes bien propriétaire de cette note.");
+                    return;
+                }
+            } else {
+                console.log('saveNote: calling create...');
+                await noteService.create(payload);
+            }
 
             // Stylish Toast with theme name
             const themeName = theme ? theme.name : 'Sans catégorie';
-            Toast.success(`Note enregistrée dans ${themeName}`);
+            Toast.success(isUpdate ? 'Note mise à jour !' : `Note enregistrée dans ${themeName}`);
 
             // Refresh the notes list for the current theme
             if (payload.theme_id) {
                 await this.renderThemeNotes(payload.theme_id);
+            }
+
+            // Also refresh all-notes view if it's open
+            const allNotesView = document.getElementById('all-notes-view');
+            if (allNotesView && allNotesView.classList.contains('active')) {
+                await this.renderAllNotes();
             }
 
             // Close the sheet
@@ -1827,6 +1977,176 @@ class CellApp {
             this.verticalHelix.stopAnimation();
             this.verticalHelix = null;
         }
+    }
+
+    /**
+     * Open All Notes View
+     */
+    async openAllNotesView() {
+        const allNotesView = document.getElementById('all-notes-view');
+        const dashboardMain = document.querySelector('.dashboard-main');
+        const header = document.querySelector('.app-header');
+
+        if (!allNotesView) return;
+
+        // Hide dashboard
+        if (dashboardMain) dashboardMain.classList.add('hidden-view');
+        if (header) header.classList.add('hidden');
+
+        // Show all-notes view
+        allNotesView.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            allNotesView.classList.add('active');
+        });
+
+        // Render notes
+        await this.renderAllNotes();
+    }
+
+    /**
+     * Close All Notes View
+     */
+    closeAllNotesView() {
+        const allNotesView = document.getElementById('all-notes-view');
+        const dashboardMain = document.querySelector('.dashboard-main');
+        const header = document.querySelector('.app-header');
+
+        if (!allNotesView) return;
+
+        allNotesView.classList.remove('active');
+        setTimeout(() => {
+            allNotesView.classList.add('hidden');
+
+            // Restore Dashboard
+            if (dashboardMain) dashboardMain.classList.remove('hidden-view');
+            if (header) header.classList.remove('hidden');
+        }, 400);
+    }
+
+    /**
+     * Render All Notes grouped by theme
+     */
+    async renderAllNotes() {
+        const container = document.getElementById('all-notes-content');
+        if (!container) return;
+
+        container.innerHTML = '<div class="notes-empty-state">Chargement...</div>';
+
+        try {
+            // Fetch all notes for this user
+            const { data: notes, error } = await supabase
+                .from('notes')
+                .select('*')
+                .eq('user_id', this.user.id)
+                .order('date_display', { ascending: false });
+
+            if (error) throw error;
+
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `
+                    <div class="notes-empty-state">
+                        <div class="notes-empty-icon">📝</div>
+                        <p>Aucune note pour le moment</p>
+                    </div>`;
+                return;
+            }
+
+            // Group notes by theme_id
+            const groupedNotes = {};
+            const noThemeNotes = [];
+
+            notes.forEach(note => {
+                if (note.theme_id) {
+                    if (!groupedNotes[note.theme_id]) {
+                        groupedNotes[note.theme_id] = [];
+                    }
+                    groupedNotes[note.theme_id].push(note);
+                } else {
+                    noThemeNotes.push(note);
+                }
+            });
+
+            // Use themes from store or fetch
+            const themes = store.get('themes') || this.themes || [];
+
+            container.innerHTML = '';
+
+            // Render each theme group
+            for (const themeId of Object.keys(groupedNotes)) {
+                const theme = themes.find(t => t.id === themeId);
+                const themeName = theme ? theme.name : 'Thème inconnu';
+                const themeColor = theme ? theme.color : '#7b61ff';
+                const themeNotes = groupedNotes[themeId];
+
+                const groupHTML = this.createNotesGroupHTML(themeName, themeColor, themeNotes);
+                container.insertAdjacentHTML('beforeend', groupHTML);
+            }
+
+            // Render notes without theme
+            if (noThemeNotes.length > 0) {
+                const groupHTML = this.createNotesGroupHTML('Sans thème', '#888888', noThemeNotes);
+                container.insertAdjacentHTML('beforeend', groupHTML);
+            }
+
+            // Add click handlers
+            container.querySelectorAll('.all-notes-card').forEach(card => {
+                card.onclick = () => {
+                    const noteId = card.dataset.noteId;
+                    const note = notes.find(n => n.id === noteId);
+                    if (note) {
+                        this.openNoteReadOnly(note);
+                    }
+                };
+            });
+
+        } catch (err) {
+            console.error('Error loading all notes:', err);
+            container.innerHTML = `
+                <div class="notes-empty-state">
+                    <p>Erreur lors du chargement des notes</p>
+                </div>`;
+        }
+    }
+
+    /**
+     * Create HTML for a theme group of notes
+     */
+    createNotesGroupHTML(themeName, themeColor, notes) {
+        const notesHTML = notes.map(note => {
+            const title = note.title || 'Sans titre';
+            const preview = this.stripHTML(note.content || '').substring(0, 100);
+            const date = note.date_display ? new Date(note.date_display).toLocaleDateString('fr-FR') : '';
+
+            return `
+                <div class="all-notes-card" data-note-id="${note.id}" style="--note-theme-color: ${themeColor}">
+                    <div class="all-notes-card-title">${title}</div>
+                    <div class="all-notes-card-preview">${preview}</div>
+                    <div class="all-notes-card-date">${date}</div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="notes-theme-group">
+                <div class="notes-theme-header">
+                    <div class="notes-theme-dot" style="background: ${themeColor}; color: ${themeColor}"></div>
+                    <span class="notes-theme-name">${themeName}</span>
+                    <span class="notes-theme-count">${notes.length} note${notes.length > 1 ? 's' : ''}</span>
+                </div>
+                <div class="notes-grid">
+                    ${notesHTML}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Helper to strip HTML tags from content
+     */
+    stripHTML(html) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
     }
 
     initVerticalDNA(color) {

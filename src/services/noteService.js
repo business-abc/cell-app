@@ -44,12 +44,19 @@ export const noteService = {
      * @param {Object} noteData 
      */
     async update(id, noteData) {
-        const { error } = await supabase
+        console.log('noteService.update calling with:', id, noteData);
+        const { data, error } = await supabase
             .from('notes')
             .update(noteData)
-            .eq('id', id);
+            .eq('id', id)
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase update error:', error);
+            throw error;
+        }
+        console.log('Supabase update result:', data);
+        return data;
     },
 
     /**

@@ -199,6 +199,22 @@
         </div>
     </div>
 
+    <!-- All Notes View (Full Screen) -->
+    <div id="all-notes-view" class="all-notes-view hidden">
+        <div class="all-notes-header">
+            <button id="back-from-notes-btn" class="back-btn-simple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                <span>Retour</span>
+            </button>
+            <h2 class="all-notes-title">Toutes mes notes</h2>
+        </div>
+        <div class="all-notes-content" id="all-notes-content">
+            <!-- Notes grouped by theme will be injected here -->
+        </div>
+    </div>
+
     <!-- Note Creation Sheet -->
     <div class="note-creation-sheet" id="note-sheet">
         <!-- Floating Close Arrow -->
@@ -213,7 +229,12 @@
 
         <div class="note-header">
             <div class="note-header-row">
-                <!-- Edit Toggle removed - notes are now read-only -->
+                <!-- Edit Toggle -->
+                <label class="edit-mode-toggle hidden" id="edit-mode-toggle-container">
+                    <input type="checkbox" id="edit-mode-checkbox">
+                    <span class="slider"></span>
+                    <span class="label-text">Édition</span>
+                </label>
 
                 <input type="text" placeholder="Titre" class="note-title-input">
 
