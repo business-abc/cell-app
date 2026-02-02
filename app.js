@@ -6,10 +6,17 @@
 import { supabase } from './supabaseClient.js';
 import { DNAHelix } from './dna-helix.js';
 
+// Modular imports
+import { noteService } from './src/services/noteService.js';
+import { themeService } from './src/services/themeService.js';
+import { store } from './src/state/store.js';
+import { Toast } from './src/components/Toast.js';
+
 class CellApp {
     constructor() {
         this.dnaHelix = null;
         this.themes = [];
+        this.selectedNoteTheme = null;    // Theme selected for current note
 
         this.init();
     }
@@ -405,32 +412,13 @@ class CellApp {
             capsule.style.pointerEvents = 'none'; // Read-only: can't change theme
         }
 
-        // Initial Toggle State
-        const toggleContainer = document.getElementById('edit-mode-toggle-container');
-        const toggleCheckbox = document.getElementById('edit-mode-checkbox');
-
-        if (toggleContainer) {
-            toggleContainer.classList.remove('hidden'); // Show toggle
-            toggleCheckbox.checked = false; // Reset to off
-
-            toggleCheckbox.onchange = () => {
-                const isEditing = toggleCheckbox.checked;
-                this.setNoteEditable(isEditing);
-            };
-        }
-
-        // Store current note ID for updating
-        this.currentEditingNoteId = note.id;
-
         // Close logic
         const closeArrow = document.getElementById('note-close-arrow');
-        // Override close behavior to cleanup read-only state
-        const originalClose = closeArrow ? closeArrow.onclick : null;
 
         const cleanupReadOnly = () => {
             sheet.classList.remove('active');
 
-            // Restore editable state
+            // Restore editable state for next creation
             if (titleInput) {
                 titleInput.removeAttribute('readonly');
                 titleInput.style.pointerEvents = 'auto';
@@ -450,7 +438,7 @@ class CellApp {
             // Restore attachment state
             if (displayPill) {
                 displayPill.classList.add('hidden');
-                displayPill.onclick = null; // Clear handler
+                displayPill.onclick = null;
                 displayPill.style.cursor = '';
                 if (removeBtn) removeBtn.style.removeProperty('display');
             }
@@ -463,18 +451,15 @@ class CellApp {
                 capsule.style.pointerEvents = 'auto';
             }
 
-            // Reset State Variables
-            this.currentEditingNoteId = null;
-            this.selectedNoteTheme = null; // Clear selection
+            // Reset State
+            this.selectedNoteTheme = null;
 
-            // Hide Toggle
-            if (toggleContainer) {
-                toggleContainer.classList.add('hidden');
-                toggleCheckbox.onchange = null;
+            // Only restore Carousel if theme view is NOT active
+            const themeView = document.getElementById('theme-view-container');
+            const isInThemeView = themeView && themeView.classList.contains('active');
+            if (carousel && !isInThemeView) {
+                carousel.classList.remove('hidden-view');
             }
-
-            // Restore Carousel Visibility
-            if (carousel) carousel.classList.remove('hidden-view');
 
             // Restore close handler
             if (closeArrow) closeArrow.onclick = () => this.toggleNoteCreationMode();
@@ -488,56 +473,7 @@ class CellApp {
         // Note sheet usually covers everything.
     }
 
-    setNoteEditable(isEditable) {
-        const titleInput = document.querySelector('.note-title-input');
-        const contentArea = document.querySelector('.note-content-area');
-        const formatBtn = document.getElementById('format-btn');
-        const saveBtn = document.querySelector('.note-action-btn.save-btn');
-        const attachBtn = document.getElementById('attach-file-btn');
-        const capsule = document.getElementById('theme-capsule');
-        const removeBtn = document.getElementById('remove-file-btn');
-
-        if (isEditable) {
-            // Enable Inputs
-            if (titleInput) {
-                titleInput.removeAttribute('readonly');
-                titleInput.style.pointerEvents = 'auto';
-            }
-            if (contentArea) {
-                contentArea.setAttribute('contenteditable', 'true');
-                contentArea.style.pointerEvents = 'auto';
-            }
-
-            // Show Tools
-            if (formatBtn) formatBtn.style.removeProperty('display');
-            if (saveBtn) saveBtn.style.removeProperty('display');
-            if (attachBtn) attachBtn.style.removeProperty('display');
-
-            // Allow Theme Change
-            if (capsule) capsule.style.pointerEvents = 'auto';
-
-            // Allow File Removal
-            if (removeBtn) removeBtn.style.removeProperty('display');
-
-        } else {
-            // Revert to Read-Only
-            if (titleInput) {
-                titleInput.setAttribute('readonly', 'true');
-                titleInput.style.pointerEvents = 'none';
-            }
-            if (contentArea) {
-                contentArea.setAttribute('contenteditable', 'false');
-                contentArea.style.pointerEvents = 'none';
-            }
-
-            if (formatBtn) formatBtn.style.display = 'none';
-            if (saveBtn) saveBtn.style.display = 'none';
-            if (attachBtn) attachBtn.style.display = 'none';
-
-            if (capsule) capsule.style.pointerEvents = 'none';
-            if (removeBtn) removeBtn.style.display = 'none';
-        }
-    }
+    // setNoteEditable removed - notes are now read-only
 
     /**
      * Open Note Creation (Editable)
@@ -819,9 +755,10 @@ class CellApp {
 
     async loadThemes() {
         try {
-            const { data, error } = await supabase.from('themes').select('*').order('created_at', { ascending: true });
+            const data = await themeService.getAll();
 
-            if (error) throw error;
+            // Store in centralized state
+            store.set('themes', data);
 
             if (data && data.length > 0) {
                 // Wait for DOM
@@ -838,7 +775,7 @@ class CellApp {
             }
         } catch (e) {
             console.error('Erreur chargement thèmes:', e);
-            this.showToast("Mode hors ligne ou erreur connexion");
+            Toast.error("Mode hors ligne ou erreur connexion");
         }
     }
 
@@ -917,12 +854,13 @@ class CellApp {
         const themeId = self.crypto.randomUUID();
 
         try {
-            // DB Insert
-            const { error } = await supabase.from('themes').insert([
-                { id: themeId, name: name, color: colorStr }
-            ]);
+            // DB Insert using service
+            await themeService.create({ id: themeId, name: name, color: colorStr });
 
-            if (error) throw error;
+            // Update store
+            const newTheme = { id: themeId, name, color: colorStr };
+            this.themes.push(newTheme);
+            store.set('themes', [...this.themes]);
 
             // Render UI
             this.renderThemeCard(themeId, name, colorStr);
@@ -950,11 +888,11 @@ class CellApp {
             }
             this.updateValidationState();
 
-            this.showToast(`Thème "${name}" créé avec succès !`);
+            Toast.success(`Thème "${name}" créé avec succès !`);
 
         } catch (e) {
             console.error(e);
-            this.showToast("Erreur lors de la création du thème.");
+            Toast.error("Erreur lors de la création du thème.");
         }
 
     }
@@ -1436,16 +1374,12 @@ class CellApp {
         const themeId = card.id;
 
         try {
-            // Delete from Supabase
-            const { error } = await supabase
-                .from('themes')
-                .delete()
-                .eq('id', themeId);
+            // Delete using service
+            await themeService.delete(themeId);
 
-            if (error) throw error;
-
-            // Remove from internal array
+            // Remove from internal array and store
             this.themes = this.themes.filter(t => t.id !== themeId);
+            store.set('themes', [...this.themes]);
 
             // Remove from DOM
             card.remove();
@@ -1456,11 +1390,11 @@ class CellApp {
             }
 
             this.updateCarouselView();
-            this.showToast('Thème supprimé');
+            Toast.success('Thème supprimé');
 
         } catch (err) {
             console.error('Erreur suppression:', err);
-            this.showToast('Erreur lors de la suppression');
+            Toast.error('Erreur lors de la suppression');
         }
     }
 
@@ -1474,7 +1408,7 @@ class CellApp {
         const date = this.noteDate || new Date();
 
         if (!title && !content) {
-            this.showToast("La note est vide.");
+            Toast.error("La note est vide.");
             return;
         }
 
@@ -1482,16 +1416,7 @@ class CellApp {
             let attachmentUrl = null;
             let attachmentName = null;
 
-            // Check if we are UPDATING an existing note
-            const isUpdate = !!this.currentEditingNoteId;
-
-            // Upload File if selected (or keep existing if update and no new file?)
-            // Logic: If new file selected, upload it. If updating and no new file, keep old URL?
-            // Currently selectedFile is nullified on close. If user doesn't touch it, selectedFile is null.
-            // If updating, we might need to preserve existing attachment if not replaced. 
-            // BUT `openNoteReadOnly` doesn't set `this.selectedFile`. 
-            // So if `this.selectedFile` is present, it's a NEW file.
-
+            // Upload File if selected
             if (this.selectedFile) {
                 const fileExt = this.selectedFile.name.split('.').pop();
                 const fileName = `${Math.random()}.` + fileExt;
@@ -1509,15 +1434,6 @@ class CellApp {
 
                 attachmentUrl = publicUrl;
                 attachmentName = this.selectedFile.name;
-            } else if (isUpdate) {
-                // Fetch existing note data to preserve attachment if not removed?
-                // Or we can assume if the pill is visible, the attachment is kept? 
-                // Simple approach: perform a SELECT first or pass data? 
-                // Optimization: We could store attachment info in `this.currentNoteAttachment` etc.
-                // For now, let's just query to be safe or blindly update fields.
-                // If we don't include attachment_url in update, it stays same? Yes for UPDATE.
-                // So if attachmentUrl is null, we shouldn't overwrite unless we explicitly deleted it.
-                // TODO: Handle explicit deletion. Ideally `removeSelectedFile` would flag it.
             }
 
             const payload = {
@@ -1528,85 +1444,30 @@ class CellApp {
                 user_id: this.user.id
             };
 
-            // Only update attachment if changed
             if (attachmentUrl) {
                 payload.attachment_url = attachmentUrl;
                 payload.attachment_name = attachmentName;
             }
 
-            let error;
-            if (isUpdate) {
-                // UPDATE
-                const { error: updateError } = await supabase
-                    .from('notes')
-                    .update(payload)
-                    .eq('id', this.currentEditingNoteId);
-                error = updateError;
-            } else {
-                // INSERT
-                if (attachmentUrl) {
-                    payload.attachment_url = attachmentUrl;
-                    payload.attachment_name = attachmentName;
-                }
-                const { error: insertError } = await supabase.from('notes').insert([payload]);
-                error = insertError;
-            }
-
-            if (error) throw error;
+            // Only INSERT (no updates - notes are read-only after creation)
+            await noteService.create(payload);
 
             // Stylish Toast with theme name
             const themeName = theme ? theme.name : 'Sans catégorie';
-            this.showToast(isUpdate ? "Note mise à jour !" : `Note enregistrée dans ${themeName}`, 'success');
+            Toast.success(`Note enregistrée dans ${themeName}`);
 
-            if (isUpdate) {
-                // If Updating: Stay on Note, Switch to Read-Only, Update UI
-
-                // 1. Switch Toggle Off
-                const toggleCheckbox = document.getElementById('edit-mode-checkbox');
-                if (toggleCheckbox) {
-                    toggleCheckbox.checked = false;
-                    // Manually trigger change handler or call method directly
-                    this.setNoteEditable(false);
-                }
-
-                // 2. Update Attachment Pill if changed
-                const displayPill = document.getElementById('file-preview-pill');
-                const displayText = document.getElementById('file-name-text');
-                const removeBtn = document.getElementById('remove-file-btn');
-
-                if (attachmentUrl && displayPill && displayText) {
-                    displayPill.classList.remove('hidden');
-                    displayText.textContent = attachmentName || 'Pièce jointe';
-                    if (removeBtn) removeBtn.style.display = 'none';
-
-                    // Update click handler for read-only (remote url)
-                    displayPill.onclick = (e) => {
-                        if (e.target.closest('#remove-file-btn')) return;
-                        window.open(attachmentUrl, '_blank');
-                    };
-                } else if (!attachmentUrl && displayPill) {
-                    // If no attachment in payload, it might mean we didn't touch it or we removed it.
-                    // If we want to handle removal, we need to check if selectedFile was explicitly removed.
-                    // For now, if displayPill is hidden, keep it hidden.
-                }
-
-                // 3. Refresh List in Background
-                console.log('Refreshing list for theme:', payload.theme_id);
-                if (payload.theme_id) {
-                    await this.renderThemeNotes(payload.theme_id);
-                } else {
-                    console.warn('No theme_id in payload, skipping refresh');
-                }
-
-            } else {
-                // If Creating: Close Sheet and Return to List
-                const closeArrow = document.getElementById('note-close-arrow');
-                if (closeArrow) closeArrow.click(); // This closes and cleans up
+            // Refresh the notes list for the current theme
+            if (payload.theme_id) {
+                await this.renderThemeNotes(payload.theme_id);
             }
 
+            // Close the sheet
+            const closeArrow = document.getElementById('note-close-arrow');
+            if (closeArrow) closeArrow.click();
+
         } catch (e) {
-            console.error(e);
-            this.showToast("Erreur sauvegarde note.");
+            console.error('Save note error:', e);
+            Toast.error(`Erreur: ${e.message || 'sauvegarde note'}`);
         }
     }
 
@@ -2003,13 +1864,7 @@ class CellApp {
         // container.innerHTML = '<div style="color:white;text-align:center;margin-top:50px;">Chargement...</div>';
 
         try {
-            const { data, error } = await supabase
-                .from('notes')
-                .select('*')
-                .eq('theme_id', themeId)
-                .order('date_display', { ascending: false });
-
-            if (error) throw error;
+            const data = await noteService.getByTheme(themeId);
 
             console.log('Fetched notes:', data ? data.length : 0);
 
