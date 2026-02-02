@@ -1438,20 +1438,28 @@ body {
 /* Footer Toolbar */
 .note-footer-toolbar {
     position: absolute;
-    bottom: 120px;
+    bottom: 40px;
+    /* Lower it a bit since it might grow tall */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 24px;
+    flex-direction: column;
+    /* Stack list and buttons */
+    gap: 12px;
     align-items: center;
-    background: rgba(30, 30, 35, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 12px 24px;
+    background: rgba(30, 30, 35, 0.9);
+    /* Slightly more opaque */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 12px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     z-index: 210;
+    max-width: 90%;
+    width: auto;
+    min-width: 300px;
+    /* Ensure space for buttons */
 }
 
 .note-action-btn {
@@ -1469,6 +1477,13 @@ body {
 .note-action-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+}
+
+.toolbar-group-left {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    width: 100%;
 }
 
 .note-action-btn.icon-only {
@@ -2304,4 +2319,81 @@ body {
     font-size: 48px;
     margin-bottom: 16px;
     opacity: 0.5;
+}
+
+/* === Multi-File Attachments === */
+.attachments-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+    width: 100%;
+    min-width: 200px;
+    min-height: 50px;
+    /* Ensure height > 0 */
+    position: relative;
+    z-index: 220;
+}
+
+.attachments-list.hidden {
+    display: none !important;
+}
+
+.attachment-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    max-width: 100%;
+    cursor: pointer;
+}
+
+.attachment-pill:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.attachment-name {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.attachment-remove-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.attachment-remove-btn:hover {
+    background: rgba(255, 59, 48, 0.8);
+    transform: scale(1.1);
+}
+
+.attachment-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 6px;
+    color: rgba(255, 255, 255, 0.7);
 }

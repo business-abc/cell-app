@@ -18,6 +18,7 @@ class CellApp {
         this.themes = [];
         this.selectedNoteTheme = null;    // Theme selected for current note
         this.currentEditingNoteId = null; // ID of note being edited (null = new note)
+        this.selectedFiles = [];          // Array of file objects (or objects with {name, url, type})
 
         this.init();
     }
@@ -175,14 +176,7 @@ class CellApp {
             // Allow re-selecting same file
             fileInput.addEventListener('click', (e) => e.target.value = null);
 
-            // Remove File Handler
-            if (removeFileBtn) {
-                removeFileBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.removeSelectedFile();
-                });
-            }
+
         } else {
             console.error('Attach button or file input not found', { attachBtn, fileInput });
         }
@@ -242,8 +236,10 @@ class CellApp {
     }
 
     handleMenuChange(menuName) {
-        // Pour l'instant, juste un feedback visuel
-        console.log(`Menu sélectionné: ${menuName}`);
+        // If we are navigating AWAY from 'notes', close the all-notes view
+        if (menuName !== 'notes') {
+            this.closeAllNotesView();
+        }
 
         // Labels pour les menus
         const menuLabels = {
@@ -282,55 +278,104 @@ class CellApp {
         // Toggle Note Creation Mode
         this.toggleNoteCreationMode();
 
-        // Animation du bouton
         button.style.transform = 'scale(0.9)';
         setTimeout(() => {
             button.style.transform = '';
         }, 150);
     }
+
     handleFileSelection(e) {
         const file = e.target.files[0];
-        const displayPill = document.getElementById('file-preview-pill');
-        const displayText = document.getElementById('file-name-text');
 
         if (file) {
             if (file.type !== 'application/pdf') {
                 this.showToast('Veuillez sélectionner un fichier PDF.');
-                e.target.value = null; // Reset
+                e.target.value = null;
                 return;
             }
-            if (displayPill && displayText) {
-                displayText.textContent = file.name;
-                displayPill.classList.remove('hidden');
 
-                // Allow preview if clicked (not on remove btn)
-                displayPill.onclick = (e) => {
-                    if (e.target.closest('#remove-file-btn')) return;
-
-                    // Create object URL for local preview
-                    const url = URL.createObjectURL(file);
-                    window.open(url, '_blank');
-
-                    // Cleanup URL after delay? No, browser handles it per page usually. 
-                    // Or revoke on cleanup. For now simple open is fine.
-                };
-                displayPill.style.cursor = 'pointer';
+            if (this.selectedFiles.length >= 5) {
+                this.showToast('Maximum 5 fichiers par note.');
+                e.target.value = null;
+                return;
             }
-            this.selectedFile = file;
-        } else {
-            this.removeSelectedFile();
+
+            if (this.selectedFiles.some(f => f.name === file.name)) {
+                this.showToast('Ce fichier est déjà ajouté.');
+                e.target.value = null;
+                return;
+            }
+
+            this.selectedFiles.push(file);
+            this.renderAttachments();
+
+            e.target.value = null;
         }
     }
 
-    removeSelectedFile() {
-        this.selectedFile = null;
-        const fileInput = document.getElementById('note-file-input');
-        const displayPill = document.getElementById('file-preview-pill');
-        const displayText = document.getElementById('file-name-text');
+    renderAttachments() {
+        const listContainer = document.getElementById('attachments-list');
+        if (!listContainer) return;
 
+        listContainer.innerHTML = '';
+
+        if (this.selectedFiles.length === 0) {
+            listContainer.classList.add('hidden');
+            return;
+        }
+
+        listContainer.classList.remove('hidden');
+
+        this.selectedFiles.forEach((file, index) => {
+            const pill = document.createElement('div');
+            pill.className = 'attachment-pill';
+
+            const fileName = file.name || 'Fichier';
+
+            pill.innerHTML = `
+                <div class="attachment-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <span class="attachment-name" title="${fileName}">${fileName}</span>
+                <button class="attachment-remove-btn" data-index="${index}" title="Supprimer">×</button>
+            `;
+
+            pill.onclick = (e) => {
+                if (e.target.closest('.attachment-remove-btn')) {
+                    e.stopPropagation();
+                    this.removeAttachment(index);
+                    return;
+                }
+                if (file.url) {
+                    window.open(file.url, '_blank');
+                } else if (file instanceof File) {
+                    const url = URL.createObjectURL(file);
+                    window.open(url, '_blank');
+                }
+            };
+
+            listContainer.appendChild(pill);
+        });
+    }
+
+    clearAttachments() {
+        this.selectedFiles = [];
+        this.renderAttachments();
+        const fileInput = document.getElementById('note-file-input');
         if (fileInput) fileInput.value = null;
-        if (displayPill) displayPill.classList.add('hidden');
-        if (displayText) displayText.textContent = '';
+    }
+
+    removeAttachment(index) {
+        if (index >= 0 && index < this.selectedFiles.length) {
+            this.selectedFiles.splice(index, 1);
+            this.renderAttachments();
+        }
     }
 
     /**
@@ -366,32 +411,26 @@ class CellApp {
             contentArea.style.pointerEvents = 'none'; // Ensure no interaction
         }
 
-        // Handle Attachment Logic
-        const displayPill = document.getElementById('file-preview-pill');
-        const displayText = document.getElementById('file-name-text');
-        const removeBtn = document.getElementById('remove-file-btn');
+        // Handle Attachments (Multi-File)
+        this.selectedFiles = []; // Reset first
 
-        if (displayPill && displayText) {
-            if (note.attachment_url) {
-                displayPill.classList.remove('hidden');
-                displayText.textContent = note.attachment_name || 'Pièce jointe';
-                if (removeBtn) removeBtn.style.display = 'none'; // No remove in read-only
-
-                // View Attachment Handler
-                displayPill.onclick = (e) => {
-                    // Check if clicking remove button (though hidden)
-                    if (e.target.closest('#remove-file-btn')) return;
-
-                    // Open URL
-                    window.open(note.attachment_url, '_blank');
-                };
-                // Make it look clickable
-                displayPill.style.cursor = 'pointer';
-
-            } else {
-                displayPill.classList.add('hidden');
-            }
+        if (note.attachments && Array.isArray(note.attachments)) {
+            // New JSONB structure
+            this.selectedFiles = [...note.attachments];
+        } else if (note.attachment_url) {
+            // Legacy fallback
+            this.selectedFiles = [{
+                name: note.attachment_name || 'Pièce jointe',
+                url: note.attachment_url,
+                type: 'application/pdf' // Assume PDF for legacy
+            }];
         }
+
+        this.renderAttachments();
+
+        // Hide Legacy Elements if they still exist in DOM
+        const displayPill = document.getElementById('file-preview-pill');
+        if (displayPill) displayPill.classList.add('hidden');
 
         // Hide Toolbar & Validation Button
         const formatBtn = document.getElementById('format-btn'); // The Aa button
@@ -611,7 +650,7 @@ class CellApp {
             }
 
             // Reset File Selection
-            this.removeSelectedFile();
+            this.clearAttachments();
 
             // Reset Form Fields
             const titleInput = document.querySelector('.note-title-input');
@@ -1526,41 +1565,58 @@ class CellApp {
         }
 
         try {
-            let attachmentUrl = null;
-            let attachmentName = null;
 
-            // Upload File if selected
-            if (this.selectedFile) {
-                const fileExt = this.selectedFile.name.split('.').pop();
-                const fileName = `${Math.random()}.` + fileExt;
-                const filePath = `${this.user.id}/${fileName}`;
+            // Process Attachments (New & Existing)
+            const attachments = [];
 
-                const { error: uploadError } = await supabase.storage
-                    .from('note_attachments')
-                    .upload(filePath, this.selectedFile);
+            // We iterate through selectedFiles which contains both File objects (new) and plain objects (existing)
+            for (const file of this.selectedFiles) {
+                if (file instanceof File) {
+                    // New File -> Upload
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                    const filePath = `${this.user.id}/${fileName}`;
 
-                if (uploadError) throw uploadError;
+                    const { error: uploadError } = await supabase.storage
+                        .from('note_attachments')
+                        .upload(filePath, file);
 
-                const { data: { publicUrl } } = supabase.storage
-                    .from('note_attachments')
-                    .getPublicUrl(filePath);
+                    if (uploadError) throw uploadError;
 
-                attachmentUrl = publicUrl;
-                attachmentName = this.selectedFile.name;
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('note_attachments')
+                        .getPublicUrl(filePath);
+
+                    attachments.push({
+                        name: file.name,
+                        url: publicUrl,
+                        type: file.type
+                    });
+                } else {
+                    // Existing File -> Keep as is
+                    attachments.push({
+                        name: file.name,
+                        url: file.url,
+                        type: file.type
+                    });
+                }
             }
+
+            // Legacy support (optional): keep first attachment in old columns if needed, 
+            // but we primarily use the 'attachments' column now.
+            const legacyUrl = attachments.length > 0 ? attachments[0].url : null;
+            const legacyName = attachments.length > 0 ? attachments[0].name : null;
 
             const payload = {
                 title,
                 content,
                 theme_id: theme ? theme.id : null,
                 date_display: date.toISOString(),
-                user_id: this.user.id
+                user_id: this.user.id.toString(), // Ensure string, though usually is
+                attachments: attachments,          // JSONB column
+                attachment_url: legacyUrl,         // Legacy
+                attachment_name: legacyName        // Legacy
             };
-
-            if (attachmentUrl) {
-                payload.attachment_url = attachmentUrl;
-                payload.attachment_name = attachmentName;
-            }
 
             // Determine if UPDATE or INSERT
             const isUpdate = !!this.currentEditingNoteId;
@@ -1574,13 +1630,11 @@ class CellApp {
                     title: payload.title,
                     content: payload.content,
                     theme_id: payload.theme_id,
-                    date_display: payload.date_display // We allow updating the display date if needed
+                    date_display: payload.date_display,
+                    attachments: payload.attachments,
+                    attachment_url: payload.attachment_url,
+                    attachment_name: payload.attachment_name
                 };
-
-                if (payload.attachment_url) {
-                    updatePayload.attachment_url = payload.attachment_url;
-                    updatePayload.attachment_name = payload.attachment_name;
-                }
 
                 console.log('saveNote: calling update with sanitized payload:', updatePayload);
                 const result = await noteService.update(this.currentEditingNoteId, updatePayload);
@@ -2010,6 +2064,7 @@ class CellApp {
         const allNotesView = document.getElementById('all-notes-view');
         const dashboardMain = document.querySelector('.dashboard-main');
         const header = document.querySelector('.app-header');
+        const carousel = document.querySelector('.cards-carousel');
 
         if (!allNotesView) return;
 
@@ -2020,6 +2075,9 @@ class CellApp {
             // Restore Dashboard
             if (dashboardMain) dashboardMain.classList.remove('hidden-view');
             if (header) header.classList.remove('hidden');
+
+            // Critical: Ensure Carousel is also visible (it happens to be hidden by openNoteReadOnly)
+            if (carousel) carousel.classList.remove('hidden-view');
         }, 400);
     }
 

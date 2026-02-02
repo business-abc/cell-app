@@ -59,11 +59,30 @@ export const themeService = {
      * @param {string} id 
      */
     async delete(id) {
+        console.log('Attempting to delete theme:', id);
+
+        // Step 1: Delete all notes associated with this theme (Application-level Cascade)
+        // This avoids foreign key constraint violations
+        const { error: notesError } = await supabase
+            .from('notes')
+            .delete()
+            .eq('theme_id', id);
+
+        if (notesError) {
+            console.error('Error deleting theme notes:', notesError);
+            throw notesError;
+        }
+
+        // Step 2: Delete the theme itself
         const { error } = await supabase
             .from('themes')
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase delete theme error:', error);
+            console.error('Error details:', error.details, error.message, error.hint);
+            throw error;
+        }
     }
 };
